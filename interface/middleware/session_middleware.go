@@ -25,5 +25,4 @@ func (m authMiddleware) User(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-
 }
