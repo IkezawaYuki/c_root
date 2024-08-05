@@ -18,5 +18,13 @@ func NewRouter() *gin.Engine {
 
 	r.Use(middleware.CorsMiddleware())
 
+	v1 := r.Group("/v1")
+	{
+		auth := v1.Group("/auth", middleware.AuthMiddleware.User)
+		{
+			auth.GET("/url")
+		}
+	}
+
 	return r
 }

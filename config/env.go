@@ -11,6 +11,9 @@ type Environment struct {
 
 	ClientID     string `envconfig:"CLIENT_ID"`
 	ClientSecret string `envconfig:"CLIENT_SECRET"`
+
+	RedisHost        string `envconfig:"REDIS_HOST"`
+	SessionRedisHost string `envconfig:"SESSION_REDIS_HOST"`
 }
 
 var Env Environment
