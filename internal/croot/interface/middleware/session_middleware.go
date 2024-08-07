@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/IkezawaYuki/c_root/di"
 	"github.com/IkezawaYuki/c_root/domain/crooterrors"
-	"github.com/IkezawaYuki/c_root/interface/controller/presenter"
+	"github.com/IkezawaYuki/c_root/internal/croot/interface/presenter"
 	"github.com/gin-gonic/gin"
 	"github.com/rbcervilla/redisstore/v8"
 )

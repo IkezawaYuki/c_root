@@ -7,6 +7,8 @@ import (
 )
 
 type Environment struct {
+	CRootHost        string `envconfig:"C_ROOT_HOST" required:"true"`
+	CRootPort        string `envconfig:"C_ROOT_PORT" required:"true"`
 	CorsAllowOrigins string `envconfig:"CORS_ALLOW_ORIGINS"`
 
 	ClientID     string `envconfig:"CLIENT_ID"`

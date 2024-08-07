@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+const UserSession = "user_session"
+
 const (
 	Name = "c_root_id"
 )
