@@ -7,24 +7,24 @@ import (
 	"time"
 )
 
-type RedisDriver interface {
+type RedisClient interface {
 	Get(ctx context.Context, key string) (string, error)
 	Set(ctx context.Context, key string, value any, ttl int) error
 	Del(ctx context.Context, key string) error
 	GetClient() *redis.Client
 }
 
-func NewRedisDriver(client *redis.Client) RedisDriver {
-	return &redisDriver{
+func NewRedisDriver(client *redis.Client) RedisClient {
+	return &redisClient{
 		client: client,
 	}
 }
 
-type redisDriver struct {
+type redisClient struct {
 	client *redis.Client
 }
 
-func (r *redisDriver) Get(ctx context.Context, key string) (string, error) {
+func (r *redisClient) Get(ctx context.Context, key string) (string, error) {
 	result, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -35,16 +35,16 @@ func (r *redisDriver) Get(ctx context.Context, key string) (string, error) {
 	return result, nil
 }
 
-func (r *redisDriver) Set(ctx context.Context, key string, value any, ttl int) error {
+func (r *redisClient) Set(ctx context.Context, key string, value any, ttl int) error {
 	_, err := r.client.Set(ctx, key, value, time.Second*time.Duration(ttl)).Result()
 	return err
 }
 
-func (r *redisDriver) Del(ctx context.Context, key string) error {
+func (r *redisClient) Del(ctx context.Context, key string) error {
 	_, err := r.client.Del(ctx, key).Result()
 	return err
 }
 
-func (r *redisDriver) GetClient() *redis.Client {
+func (r *redisClient) GetClient() *redis.Client {
 	return r.client
 }

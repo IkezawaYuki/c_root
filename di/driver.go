@@ -16,6 +16,6 @@ func init() {
 	}
 }
 
-func NewSessionDriver() driver.RedisDriver {
+func NewSessionDriver() driver.RedisClient {
 	return driver.NewRedisDriver(sessionRedisClient)
 }

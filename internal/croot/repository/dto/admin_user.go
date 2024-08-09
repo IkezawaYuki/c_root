@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/IkezawaYuki/c_root/domain/entity"
+	"github.com/IkezawaYuki/c_root/internal/croot/domain/entity"
 	"gorm.io/gorm"
 )
 

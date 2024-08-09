@@ -1,6 +1,7 @@
 package crooterrors
 
 import (
+	"errors"
 	"fmt"
 	native "github.com/pkg/errors"
 )
@@ -9,10 +10,12 @@ type ErrorCode string
 
 const (
 	InvalidRequestError ErrorCode = "InvalidRequestError"
-	UnauthorizedError   ErrorCode = "UnauthorizedError"
+
 	ForbiddenError      ErrorCode = "ForbiddenError"
 	InternalServerError ErrorCode = "InternalServerError"
 )
+
+var UnauthorizedError = errors.New("UnauthorizedError")
 
 func (code ErrorCode) ToString() string {
 	return string(code)

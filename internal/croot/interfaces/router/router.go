@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/IkezawaYuki/c_root/config"
-	"github.com/IkezawaYuki/c_root/internal/croot/interface/middleware"
+	"github.com/IkezawaYuki/c_root/internal/croot/interfaces/middleware"
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"

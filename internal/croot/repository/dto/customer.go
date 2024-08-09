@@ -2,7 +2,7 @@ package dto
 
 import (
 	"database/sql"
-	"github.com/IkezawaYuki/c_root/domain/entity"
+	"github.com/IkezawaYuki/c_root/internal/croot/domain"
 	"gorm.io/gorm"
 )
 
@@ -23,8 +23,8 @@ func (Customer) TableName() string {
 	return "customers"
 }
 
-func ConvertCustomer(c Customer) *entity.Customer {
-	var customer = entity.Customer{
+func ConvertCustomer(c Customer) *domain.Customer {
+	var customer = domain.Customer{
 		ID:             c.ID,
 		Name:           c.Name,
 		Email:          c.EMail,
