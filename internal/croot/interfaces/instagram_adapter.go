@@ -3,15 +3,15 @@ package interfaces
 import (
 	"context"
 	"github.com/IkezawaYuki/c_root/internal/croot/domain"
-	"github.com/IkezawaYuki/c_root/internal/croot/infrastructre/driver"
+	"github.com/IkezawaYuki/c_root/internal/croot/infrastructre"
 	"io"
 )
 
 type instagramAdapter struct {
-	client driver.HttpClient
+	client infrastructre.HttpClient
 }
 
-func NewInstagramAdapter(client driver.HttpClient) domain.InstagramPostRepository {
+func NewInstagramAdapter(client infrastructre.HttpClient) domain.InstagramPostRepository {
 	return &instagramAdapter{client: client}
 }
 

@@ -1,27 +1,26 @@
-package driver
+package infrastructre
 
 import (
 	"context"
 	"errors"
+	"github.com/IkezawaYuki/c_root/config"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
 
-type RedisClient interface {
-	Get(ctx context.Context, key string) (string, error)
-	Set(ctx context.Context, key string, value any, ttl int) error
-	Del(ctx context.Context, key string) error
-	GetClient() *redis.Client
-}
-
-func NewRedisDriver(client *redis.Client) RedisClient {
-	return &redisClient{
-		client: client,
-	}
+func NewRedisClient(c *redis.Client) RedisClient {
+	return &redisClient{client: c}
 }
 
 type redisClient struct {
 	client *redis.Client
+}
+
+func GetRedisConnection() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     config.Env.RedisAddr,
+		Password: config.Env.RedisPass,
+	})
 }
 
 func (r *redisClient) Get(ctx context.Context, key string) (string, error) {
