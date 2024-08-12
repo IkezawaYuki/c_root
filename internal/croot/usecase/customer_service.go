@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/IkezawaYuki/c_root/internal/croot/domain"
 	"github.com/IkezawaYuki/c_root/internal/croot/domain/crooterrors"
+	"github.com/IkezawaYuki/c_root/internal/croot/interfaces"
 )
 
 type CustomerService interface {
@@ -11,6 +12,7 @@ type CustomerService interface {
 }
 
 type customerService struct {
+	repository    interfaces.Repository
 	customerRepo  domain.CustomerRepository
 	instagramRepo domain.InstagramPostRepository
 	wordpressRepo domain.WordpressRepository
@@ -24,7 +26,12 @@ func NewCustomerService(customerRepo domain.CustomerRepository, instagramRepo do
 }
 
 func (c *customerService) GetInstagram(ctx context.Context, customerId string) ([]domain.InstagramMediaDetail, error) {
-	customer, err := c.customerRepo.FindByID(ctx, customerId)
+	tx, err := c.repository.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	customer, err := c.customerRepo.FindByIDWithTX(ctx, customerId, tx)
 	if err != nil {
 		return nil, err
 	}

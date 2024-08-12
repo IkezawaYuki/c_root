@@ -14,9 +14,8 @@ func NewCustomerAdapter() domain.CustomerRepository {
 	return &customerAdapter{}
 }
 
-func (c *customerAdapter) FindByIDWithTX(ctx context.Context, id string, tx domain.Tx) domain.Customer {
-	//TODO implement me
-	panic("implement me")
+func (c *customerAdapter) FindByIDWithTX(ctx context.Context, id string, tx domain.Tx) (domain.Customer, error) {
+	tx.
 }
 
 func (c *customerAdapter) FindAllWithTx(ctx context.Context, page int, tx domain.Tx) []domain.Customer {

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"github.com/IkezawaYuki/c_root/internal/croot/infrastructre"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type Customer struct {
 }
 
 type CustomerRepository interface {
-	FindByIDWithTX(ctx context.Context, id string, tx Tx) Customer
+	FindByIDWithTX(ctx context.Context, id string, tx infrastructre.Tx) (Customer, error)
 	FindAllWithTx(ctx context.Context, page int, tx Tx) []Customer
 	CreateWithTx(ctx context.Context, customer Customer, tx Tx) Customer
 	UpdateWithTx(ctx context.Context, customer Customer, tx Tx) Customer
@@ -30,9 +31,4 @@ type CustomerRepository interface {
 	Create(ctx context.Context, customer Customer) Customer
 	Update(ctx context.Context, customer Customer) Customer
 	Delete(ctx context.Context, customer Customer) Customer
-}
-
-type Tx interface {
-	Commit() error
-	Rollback() error
 }
