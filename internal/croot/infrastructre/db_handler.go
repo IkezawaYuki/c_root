@@ -9,9 +9,11 @@ type DbClient interface {
 	Exec(query string, args ...interface{}) (Result, error)
 	Query(query string, args ...interface{}) (Rows, error)
 	QueryRow(query string, args ...interface{}) Row
-	Begin() (Tx, error)
 	Close() error
 	BeginTx(ctx context.Context) (Tx, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) Row
+	QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error)
 }
 
 type Result interface {
@@ -36,13 +38,13 @@ type Stmt interface {
 	Close() error
 }
 
-type Tx interface {
-	Commit() error
-	Rollback() error
-	Exec(query string, args ...interface{})
-	Query(query string, args ...interface{}) (Row, error)
-	QueryRow(query string, args ...interface{}) Row
-}
+//type Tx interface {
+//	Commit() error
+//	Rollback() error
+//	Exec(query string, args ...any) (Result, error)
+//	Query(query string, args ...any) (Row, error)
+//	QueryRow(query string, args ...any) Row
+//}
 
 type RedisClient interface {
 	Get(ctx context.Context, key string) (string, error)

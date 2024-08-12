@@ -1,6 +1,7 @@
 package infrastructre
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/IkezawaYuki/c_root/config"
@@ -44,38 +45,25 @@ func (m *mysqlClient) QueryRow(query string, args ...interface{}) Row {
 	return m.db.QueryRow(query, args...)
 }
 
-func (m *mysqlClient) Begin() (Tx, error) {
-	tx, err := m.db.Begin()
-	t := Tx{
+func (m *mysqlClient) QueryRowContext(ctx context.Context, query string, args ...any) Row {
+	return m.db.QueryRowContext(ctx, query, args...)
+}
+
+func (m *mysqlClient) QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error) {
+	return m.db.QueryContext(ctx, query, args...)
+}
+
+func (m *mysqlClient) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error) {
+	return m.db.ExecContext(ctx, query, args...)
+}
+
+func (m *mysqlClient) BeginTx(ctx context.Context) (Tx, error) {
+	tx, err := m.db.BeginTx(ctx, nil)
+	return Tx{
 		tx: tx,
-	}
-	return t, err
+	}, err
 }
 
 func (m *mysqlClient) Close() error {
 	return m.db.Close()
-}
-
-type Tx struct {
-	tx *sql.Tx
-}
-
-func (t Tx) Commit() error {
-	return t.tx.Commit()
-}
-
-func (t Tx) Rollback() error {
-	return t.tx.Rollback()
-}
-
-func (t Tx) Exec(query string, args ...interface{}) (Result, error) {
-	return t.tx.Exec(query, args...)
-}
-
-func (t Tx) Query(query string, args ...interface{}) (Row, error) {
-	return t.tx.Query(query, args...)
-}
-
-func (t Tx) QueryRow(query string, args ...interface{}) Row {
-	return t.tx.QueryRow(query, args...)
 }
