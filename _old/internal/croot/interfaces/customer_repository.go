@@ -15,8 +15,8 @@ type CustomerRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.Customer, error)
 	FindAll(ctx context.Context, page int) []domain.Customer
 	Create(ctx context.Context, customer domain.Customer) domain.Customer
-	Update(ctx context.Context, customer domain.Customer) domain.Customer
-	Delete(ctx context.Context, customer domain.Customer) domain.Customer
+	Update(ctx context.Context, customer domain.Customer) error
+	Delete(ctx context.Context, customer domain.Customer) error
 }
 
 type customerRepository struct {
@@ -52,24 +52,85 @@ func (c *customerRepository) DeleteWithTx(ctx context.Context, customer domain.C
 	panic("implement me")
 }
 
-func (c *customerRepository) FindAll(ctx context.Context, page int) []domain.Customer {
-	//TODO implement me
-	panic("implement me")
+const findAllCustomerQuery = `select id, name, email, password, wordpress_url, facebook_token, start_date, instagram_id, instagram_name, delete_hash_flag
+from customers
+limit ? offset ?;
+`
+
+func (c *customerRepository) FindAll(ctx context.Context, limit, offset int) ([]domain.Customer, error) {
+	rows, err := c.client.QueryContext(ctx, findAllCustomerQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	var customers []domain.Customer
+	for rows.Next() {
+		var customer domain.Customer
+		if  rows.Scan();
+	}
 }
 
-func (c *customerRepository) Create(ctx context.Context, customer domain.Customer) domain.Customer {
-	//TODO implement me
-	panic("implement me")
+const insertCustomerQuery = `
+insert into customers (name, email, password, wordpress_url, facebook_token, start_date, instagram_id, instagram_name, delete_hash_flag)
+values(?, ?, ?, ?, ?, ?, ?, ?, ?);
+`
+
+func (c *customerRepository) Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error) {
+	result, err := c.client.ExecContext(ctx, insertCustomerQuery,
+		customer.Name,
+		customer.Email,
+		customer.Password,
+		customer.WordpressURL,
+		customer.FacebookToken,
+		customer.StartDate,
+		customer.InstagramID,
+		customer.InstagramName,
+		customer.DeleteHashFlag,
+	)
+	if err != nil {
+		return nil, err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+	customer.ID = int(id)
+	return &customer, nil
 }
 
-func (c *customerRepository) Update(ctx context.Context, customer domain.Customer) domain.Customer {
-	//TODO implement me
-	panic("implement me")
+const customerUpdateQuery = `update customers set 
+name = ?,
+email = ?,
+password = ?,
+wordpress_url = ?,
+start_date = ?,
+instagram_id = ?,
+instagram_name = ?,
+delete_hash_flag = ?
+where id = ?;`
+
+func (c *customerRepository) Update(ctx context.Context, customer domain.Customer) error {
+	_, err := c.client.ExecContext(ctx, customerUpdateQuery,
+		customer.Name,
+		customer.Email,
+		customer.Password,
+		customer.WordpressURL,
+		customer.StartDate,
+		customer.InstagramID,
+		customer.InstagramName,
+		customer.DeleteHashFlag,
+		customer.ID,
+	)
+	return err
 }
 
-func (c *customerRepository) Delete(ctx context.Context, customer domain.Customer) domain.Customer {
-	//TODO implement me
-	panic("implement me")
+const customerDeleteQuery = "delete from customer where id = ?"
+
+func (c *customerRepository) Delete(ctx context.Context, customer domain.Customer) error {
+	_, err := c.client.ExecContext(ctx, customerDeleteQuery, customer.ID)
+	return err
 }
 
 const findCustomerByID = `select id, name, email, password, wordpress_url, facebook_token, start_date, instagram_id, instagram_name from customers where id = ?;`

@@ -7,16 +7,8 @@ import (
 )
 
 type Environment struct {
-	CRootHost        string `envconfig:"C_ROOT_HOST" required:"true"`
-	CRootPort        string `envconfig:"C_ROOT_PORT" required:"true"`
-	CorsAllowOrigins string `envconfig:"CORS_ALLOW_ORIGINS"`
-
-	ClientID     string `envconfig:"CLIENT_ID"`
-	ClientSecret string `envconfig:"CLIENT_SECRET"`
-
-	RedisAddr string `envconfig:"REDIS_ADDR"`
-	RedisPass string `envconfig:"REDIS_PASS"`
-
+	RedisAddr    string `envconfig:"REDIS_ADDR"`
+	RedisPass    string `envconfig:"REDIS_PASS"`
 	DatabaseUser string `envconfig:"DATABASE_USER"`
 	DatabasePass string `envconfig:"DATABASE_PASS"`
 	DatabaseName string `envconfig:"DATABASE_NAME"`

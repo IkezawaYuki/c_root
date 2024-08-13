@@ -15,15 +15,13 @@ func (t Tx) Rollback() error {
 }
 
 func (t Tx) Exec(query string, args ...interface{}) (Result, error) {
-	panic("implement me")
+	return t.tx.Exec(query, args...)
 }
 
 func (t Tx) Query(query string, args ...interface{}) (Row, error) {
-	//TODO implement me
-	panic("implement me")
+	return t.tx.Query(query, args...)
 }
 
 func (t Tx) QueryRow(query string, args ...interface{}) Row {
-	//TODO implement me
-	panic("implement me")
+	return t.tx.QueryRow(query, args...)
 }
