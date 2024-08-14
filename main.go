@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log/slog"
 	"net/http"
 )
 
@@ -21,18 +22,25 @@ func main() {
 	}
 
 	customerController := NewCustomerController(db)
+	authService := NewAuthService(db)
+	authMiddleware := NewAuthMiddleware(authService)
 
 	e := echo.New()
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-	e.GET("/customer/:id", func(c echo.Context) error {
+
+	customerHandler := e.Group("/customer")
+	customerHandler.Use(authMiddleware)
+
+	customerHandler.GET("/:id", func(c echo.Context) error {
 		return customerController.GetCustomer(c)
 	})
-	e.GET("/customer/:id/instagram", func(c echo.Context) error {
+	customerHandler.GET("/:id/instagram", func(c echo.Context) error {
 		return c.String(http.StatusOK, c.Param("id"))
 	})
-	e.POST("/customer/:id/facebook_token", func(c echo.Context) error {
+	customerHandler.POST("/:id/facebook_token", func(c echo.Context) error {
 		return c.String(http.StatusOK, c.Param("id"))
 	})
 
@@ -116,6 +124,7 @@ type CustomerService struct {
 }
 
 func (s *CustomerService) GetCustomer(ctx context.Context, id string) (*Customer, error) {
+	slog.Info("service")
 	customer, err := s.customerRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -146,6 +155,35 @@ func NewCustomerController(db *gorm.DB) CustomerController {
 			},
 		},
 		presenter: Presenter{},
+	}
+}
+
+func NewAuthService(db *gorm.DB) AuthService {
+	return AuthService{
+		customerRepository: CustomerRepository{
+			db: db,
+		},
+	}
+}
+
+type AuthService struct {
+	customerRepository CustomerRepository
+}
+
+func (a *AuthService) IsLogin() (bool, error) {
+	return true, nil
+}
+
+func NewAuthMiddleware(srv AuthService) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			slog.Info("middleware")
+			login, err := srv.IsLogin()
+			if !login {
+				return echo.NewHTTPError(http.StatusUnauthorized, err)
+			}
+			return next(c)
+		}
 	}
 }
 
