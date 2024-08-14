@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -11,12 +14,20 @@ import (
 func main() {
 	fmt.Println("hello")
 
+	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+
+	customerController := NewCustomerController(db)
+
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 	e.GET("/customer/:id", func(c echo.Context) error {
-		return c.String(http.StatusOK, c.Param("id"))
+		return customerController.GetCustomer(c)
 	})
 	e.GET("/customer/:id/instagram", func(c echo.Context) error {
 		return c.String(http.StatusOK, c.Param("id"))
@@ -28,97 +39,119 @@ func main() {
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-type Transaction interface {
-	Commit() error
-	Rollback()
-	GetTx() *gorm.DB
-}
-
-type Tx struct {
-	tx *gorm.DB
-}
-
-func (t Tx) Commit() error {
-	return t.tx.Commit().Error
-}
-
-func (t Tx) Rollback() {
-	t.tx.Rollback()
-}
-
-func (t Tx) GetTx() *gorm.DB {
-	return t.tx
-}
-
-type Filter interface {
-	GenerateMods(db *gorm.DB) *gorm.DB
-}
-
-type DbClient interface {
-	BeginTransaction() Transaction
-
-	First(model interface{}, filter Filter) error
-}
-
 type Customer struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-type baseRepository struct {
-	dbClient DbClient
+type CustomerDto struct {
+	ID             string         `gorm:"column:id"`
+	Name           string         `gorm:"column:name"`
+	EMail          string         `gorm:"column:email"`
+	Password       string         `gorm:"column:password"`
+	FacebookToken  sql.NullString `gorm:"column:facebook_token"`
+	StartDate      sql.NullTime   `gorm:"column:start_date"`
+	InstagramID    sql.NullString `gorm:"column:instagram_id"`
+	InstagramName  sql.NullString `gorm:"column:instagram_name"`
+	DeleteHashFlag int            `gorm:"column:delete_hash_flag"`
+	gorm.Model
 }
 
-type BaseRepository interface {
-	BeginTransaction() Transaction
+func (c *CustomerDto) ConvertToCustomer() *Customer {
+	return &Customer{
+		ID:   c.ID,
+		Name: c.Name,
+	}
 }
 
-func (b *baseRepository) BeginTransaction() Transaction {
-	return b.dbClient.BeginTransaction()
+type BaseRepository struct {
+	db *gorm.DB
 }
 
-type customerRepository struct {
-	dbClient DbClient
+func (b *BaseRepository) Begin() *gorm.DB {
+	return b.db.Begin()
 }
 
-func (c *customerRepository) FindByID(id string) (*Customer, error) {
-	c.dbClient.First()
+func (b *BaseRepository) Commit(tx *gorm.DB) error {
+	return tx.Commit().Error
 }
 
-type CustomerRepository interface {
-	FindByID(id string) (*Customer, error)
+func (b *BaseRepository) Rollback(tx *gorm.DB) error {
+	return tx.Rollback().Error
 }
 
-type customerService struct {
+type CustomerRepository struct {
+	db *gorm.DB
+}
+
+func (c *CustomerRepository) FindByID(ctx context.Context, id string) (*Customer, error) {
+	var customer CustomerDto
+	result := c.db.WithContext(ctx).First(&customer, id)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("not found")
+		}
+	}
+	return customer.ConvertToCustomer(), nil
+}
+
+func (c *CustomerRepository) FindByIDTx(ctx context.Context, id string, tx *gorm.DB) (*Customer, error) {
+	var customer CustomerDto
+	result := tx.WithContext(ctx).First(&customer, id)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("not found")
+		}
+	}
+	return customer.ConvertToCustomer(), nil
+}
+
+func (c *CustomerRepository) SaveTx(customer *Customer, tx *gorm.DB) *gorm.DB {
+	return tx.Save(customer)
+}
+
+type CustomerService struct {
 	baseRepository     BaseRepository
 	customerRepository CustomerRepository
 }
 
-func (s *customerService) GetCustomer(ctx context.Context, id string) (*Customer, error) {
-
+func (s *CustomerService) GetCustomer(ctx context.Context, id string) (*Customer, error) {
+	customer, err := s.customerRepository.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return customer, nil
 }
 
-type CustomerService interface {
-	GetCustomer(c context.Context, id string) (*Customer, error)
+type Presenter struct {
 }
 
-type Presenter interface {
-	Generate(error, any) (int, interface{})
-}
-
-type presenter struct {
-}
-
-func (p *presenter) Generate(err error, body any) (int, interface{}) {
+func (p *Presenter) Generate(err error, body any) (int, interface{}) {
 	return http.StatusNotImplemented, nil
 }
 
-type customerController struct {
+type CustomerController struct {
 	customerService CustomerService
 	presenter       Presenter
 }
 
-func (ctr *customerController) GetCustomer(c echo.Context) error {
-	customer, err := ctr.customerService.GetCustomer(context.Background(), c.Param("id"))
+func NewCustomerController(db *gorm.DB) CustomerController {
+	return CustomerController{
+		customerService: CustomerService{
+			baseRepository: BaseRepository{
+				db: db,
+			},
+			customerRepository: CustomerRepository{
+				db: db,
+			},
+		},
+		presenter: Presenter{},
+	}
+}
+
+func (ctr *CustomerController) GetCustomer(c echo.Context) error {
+	customerId := c.Param("id")
+	ctx := c.Request().Context()
+	customer, err := ctr.customerService.GetCustomer(ctx, customerId)
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
