@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"log/slog"
 	"strings"
 	"time"
 )
@@ -39,8 +40,10 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *domain.C
 	if err != nil {
 		return err
 	}
+	uid := uuid.New().String()
+	customer.ID = uid
 	return s.customerRepository.Save(ctx, &domain.CustomerDto{
-		ID:             uuid.New().String(),
+		ID:             customer.ID,
 		Name:           customer.Name,
 		Email:          customer.Email,
 		Password:       string(passwordHash),
@@ -65,6 +68,7 @@ func NewAuthService(customerRepo repository.CustomerRepository, redisClient repo
 }
 
 func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
+	slog.Info("IsCustomerIsLogin is invoked")
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -73,14 +77,15 @@ func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
 		return []byte(config.Env.AccessSecretKey), nil
 	})
 	if err != nil {
-		return "", err
+		slog.Info(err.Error())
+		return "", domain.ErrAuthorization
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", fmt.Errorf("invalid token")
+		return "", domain.ErrAuthorization
 	}
 	if !claims.VerifyAudience("customer", true) {
-		return "", fmt.Errorf("not authentication")
+		return "", domain.ErrAuthentication
 	}
 	return claims["sub"].(string), nil
 }

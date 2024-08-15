@@ -19,11 +19,12 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 
 func (c *CustomerRepository) FindByID(ctx context.Context, id string) (*domain.Customer, error) {
 	var customer domain.CustomerDto
-	result := c.db.WithContext(ctx).First(&customer, id)
+	result := c.db.WithContext(ctx).First(&customer, "id = ?", id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("not found")
 		}
+		return nil, result.Error
 	}
 	return customer.ConvertToCustomer(), nil
 }
@@ -35,6 +36,7 @@ func (c *CustomerRepository) FindByIDTx(ctx context.Context, id string, tx *gorm
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("not found")
 		}
+		return nil, result.Error
 	}
 	return customer.ConvertToCustomer(), nil
 }
@@ -44,8 +46,9 @@ func (c *CustomerRepository) FindByEmail(ctx context.Context, email string) (*do
 	result := c.db.WithContext(ctx).First(&customer, "email = ?", email)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errors.New("not found")
+			return nil, domain.ErrNotFound
 		}
+		return nil, result.Error
 	}
 	return customer.ConvertToCustomer(), nil
 }

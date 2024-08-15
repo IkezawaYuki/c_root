@@ -5,6 +5,7 @@ import (
 	"github.com/IkezawaYuki/c_root/internal/presenter"
 	"github.com/IkezawaYuki/c_root/internal/usecase"
 	"github.com/labstack/echo/v4"
+	"log/slog"
 	"net/http"
 )
 
@@ -21,6 +22,7 @@ func NewCustomerController(customerUsecase usecase.CustomerUsecase, presenter pr
 }
 
 func (ctr *CustomerController) Login(c echo.Context) error {
+	slog.Info("Login is invoked")
 	var user domain.User
 	if err := c.Bind(&user); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -31,24 +33,12 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 }
 
 func (ctr *CustomerController) GetCustomer(c echo.Context) error {
+	slog.Info("GetCustomer is invoked")
 	customerId := c.Param("id")
 	ctx := c.Request().Context()
 	customer, err := ctr.customerUsecase.GetCustomer(ctx, customerId)
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
-
-//type AuthController struct {
-//	usecase.
-//	presenter       presenter.Presenter
-//}
-//
-//func NewAuthController(customerSrv service.CustomerService, authSrv service.AuthService, presenter2 presenter.Presenter) AuthController {
-//	return AuthController{
-//		customerService: customerSrv,
-//		authService:     authSrv,
-//		presenter:       presenter2,
-//	}
-//}
 
 type AdminController struct {
 	adminUsecase usecase.AdminUsecase

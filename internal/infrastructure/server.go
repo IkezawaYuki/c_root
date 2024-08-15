@@ -26,7 +26,7 @@ func Run() {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	e.GET("/customer/login", customerController.Login)
+	e.POST("/customer/login", customerController.Login)
 
 	customerHandler := e.Group("/customer")
 	customerHandler.Use(customerAuthMiddleware)

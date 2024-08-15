@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrNotFound       = errors.New("not found")
 	ErrAuthentication = errors.New("authentication err")
 	ErrAuthorization  = errors.New("authorization err")
 )

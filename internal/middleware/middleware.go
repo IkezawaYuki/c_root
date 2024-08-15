@@ -18,7 +18,7 @@ func NewBadgeAuthMiddleware(authService service.AuthService, presenter presenter
 func NewAdminAuthMiddleware(authService service.AuthService, presenter presenter.Presenter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			slog.Info("middleware")
+			slog.Info("AdminAuthMiddleware is invoked")
 			login, err := authService.IsAdminLogin()
 			if !login {
 				return c.JSON(presenter.Generate(err, login))
@@ -31,12 +31,13 @@ func NewAdminAuthMiddleware(authService service.AuthService, presenter presenter
 func NewCustomerAuthMiddleware(authService service.AuthService, presenter presenter.Presenter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			slog.Info("middleware")
+			slog.Info("CustomerAuthMiddleware is invoked")
 			token := c.Request().Header.Get("Authorization")
 			customerID, err := authService.IsCustomerIsLogin(token)
 			if err != nil {
-				return c.JSON(presenter.Generate(err, customerID))
+				return c.JSON(presenter.Generate(err, nil))
 			}
+			slog.Info("login: " + customerID)
 			c.Set("customer_id", customerID)
 			return next(c)
 		}

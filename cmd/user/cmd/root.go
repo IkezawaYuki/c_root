@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(customer)
+		fmt.Println(customer.ID)
 		fmt.Println("success!")
 	},
 }
