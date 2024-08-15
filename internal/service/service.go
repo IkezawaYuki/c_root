@@ -2,14 +2,17 @@ package service
 
 import (
 	"context"
-	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/IkezawaYuki/c_root/config"
 	"github.com/IkezawaYuki/c_root/internal/domain"
+	"github.com/IkezawaYuki/c_root/internal/infrastructure"
 	"github.com/IkezawaYuki/c_root/internal/repository"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"log/slog"
 	"strings"
 	"time"
@@ -40,19 +43,20 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *domain.C
 	if err != nil {
 		return err
 	}
-	uid := uuid.New().String()
-	customer.ID = uid
-	return s.customerRepository.Save(ctx, &domain.CustomerDto{
+	customer.ID = uuid.New().String()
+	if err := s.customerRepository.Save(ctx, &domain.CustomerDto{
 		ID:             customer.ID,
 		Name:           customer.Name,
 		Email:          customer.Email,
 		Password:       string(passwordHash),
-		FacebookToken:  sql.NullString{},
-		StartDate:      sql.NullTime{},
-		InstagramID:    sql.NullString{},
-		InstagramName:  sql.NullString{},
 		DeleteHashFlag: 0,
-	}).Error
+	}).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return domain.ErrDuplicateEmail
+		}
+		return err
+	}
+	return nil
 }
 
 type AuthService struct {
@@ -120,4 +124,73 @@ func NewAdminService(customerRepo repository.CustomerRepository, adminRepo repos
 		customerRepository: customerRepo,
 		adminRepository:    adminRepo,
 	}
+}
+
+func (a *AdminService) GetCustomer(ctx context.Context, id string) (*domain.Customer, error) {
+	return a.customerRepository.FindByID(ctx, id)
+}
+
+type InstagramService struct {
+	httpClient infrastructure.HttpClient
+}
+
+func NewInstagramService(httpClient infrastructure.HttpClient) InstagramService {
+	return InstagramService{
+		httpClient: httpClient,
+	}
+}
+
+const getMediaList = "/media"
+
+func (i *InstagramService) GetMediaList(ctx context.Context, facebookToken string) ([]string, error) {
+	resp, err := i.httpClient.GetRequest(ctx,
+		getMediaList,
+		nil,
+		fmt.Sprintf("Bearer %s", facebookToken))
+	if err != nil {
+		return nil, err
+	}
+	var detail domain.InstagramMediaList
+	if err := json.Unmarshal(resp, &detail); err != nil {
+		return nil, err
+	}
+	return detail.ConvertToInstagramMediaList(), nil
+}
+
+const getMediaDetail = "/media/detail"
+
+func (i *InstagramService) GetMediaDetail(ctx context.Context, facebookToken string, id string) (*domain.InstagramMediaDetail, error) {
+	resp, err := i.httpClient.GetRequest(ctx,
+		getMediaDetail,
+		nil,
+		fmt.Sprintf("Bearer %s", facebookToken),
+	)
+	if err != nil {
+		return nil, err
+	}
+	var detail domain.InstagramMediaDetail
+	if err := json.Unmarshal(resp, &detail); err != nil {
+		return nil, err
+	}
+	return &detail, nil
+}
+
+type WordpressService struct {
+	httpClient infrastructure.HttpClient
+}
+
+func (w *WordpressService) Post() {
+
+}
+
+func (w *WordpressService) UploadFile() {
+
+}
+
+type MetaService struct {
+	httpClient infrastructure.HttpClient
+}
+
+func (m *MetaService) GetLongToken() {
+
 }

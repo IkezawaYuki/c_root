@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/IkezawaYuki/c_root/internal/domain"
 	"github.com/IkezawaYuki/c_root/internal/repository"
@@ -9,16 +10,28 @@ import (
 )
 
 type CustomerUsecase struct {
-	baseRepository  repository.BaseRepository
-	customerService service.CustomerService
-	authService     service.AuthService
+	baseRepository   repository.BaseRepository
+	customerService  service.CustomerService
+	authService      service.AuthService
+	wordpressService service.WordpressService
+	instagramService service.InstagramService
+	metaService      service.MetaService
 }
 
-func NewCustomerUsecase(baseRepo repository.BaseRepository, customerSrv service.CustomerService, authSrv service.AuthService) CustomerUsecase {
+func NewCustomerUsecase(baseRepo repository.BaseRepository,
+	customerSrv service.CustomerService,
+	authSrv service.AuthService,
+	wordpressSrv service.WordpressService,
+	instagramSrv service.InstagramService,
+	metaSrv service.MetaService,
+) CustomerUsecase {
 	return CustomerUsecase{
-		baseRepository:  baseRepo,
-		customerService: customerSrv,
-		authService:     authSrv,
+		baseRepository:   baseRepo,
+		customerService:  customerSrv,
+		authService:      authSrv,
+		wordpressService: wordpressSrv,
+		instagramService: instagramSrv,
+		metaService:      metaSrv,
 	}
 }
 
@@ -35,6 +48,29 @@ func (c *CustomerUsecase) Login(ctx context.Context, user *domain.User) (string,
 		return "", fmt.Errorf("invalid password: %w", err)
 	}
 	return c.authService.GenerateJWTCustomer(customer)
+}
+
+func (c *CustomerUsecase) GetInstagramMedia(ctx context.Context, id string) ([]*domain.InstagramMediaDetail, error) {
+	customer, err := c.customerService.GetCustomer(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if customer.FacebookToken == nil {
+		return nil, errors.New("invalid operation")
+	}
+	mediaList, err := c.instagramService.GetMediaList(ctx, *customer.FacebookToken)
+	if err != nil {
+		return nil, err
+	}
+	var media []*domain.InstagramMediaDetail
+	for _, mediaID := range mediaList {
+		detail, err := c.instagramService.GetMediaDetail(ctx, *customer.FacebookToken, mediaID)
+		if err != nil {
+			return nil, err
+		}
+		media = append(media, detail)
+	}
+	return media, nil
 }
 
 type AdminUsecase struct {

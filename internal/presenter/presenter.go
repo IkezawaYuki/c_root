@@ -26,6 +26,8 @@ func (p *Presenter) Generate(err error, body any) (int, any) {
 		return http.StatusUnauthorized, err.Error()
 	case errors.Is(err, domain.ErrAuthorization):
 		return http.StatusUnauthorized, err.Error()
+	case errors.Is(err, domain.ErrDuplicateEmail):
+		return http.StatusBadRequest, err.Error()
 	default:
 		return http.StatusInternalServerError, err.Error()
 	}

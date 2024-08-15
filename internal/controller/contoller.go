@@ -40,6 +40,14 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
 
+func (ctr *CustomerController) GetInstagramMedia(c echo.Context) error {
+	slog.Info("GetInstagramMedia is invoked")
+	customerID := c.Get("customer_id").(string)
+	ctx := c.Request().Context()
+	mediaList, err := ctr.customerUsecase.GetInstagramMedia(ctx, customerID)
+	return c.JSON(ctr.presenter.Generate(err, mediaList))
+}
+
 type AdminController struct {
 	adminUsecase usecase.AdminUsecase
 	presenter    presenter.Presenter
