@@ -16,6 +16,12 @@ func NewAuthService(db *gorm.DB, redisCli *redis.Client) service.AuthService {
 	return service.NewAuthService(customerRepo, redisClient)
 }
 
+func NewCustomerService(db *gorm.DB, redisCli *redis.Client) service.CustomerService {
+	baseRepo := repository.NewBaseRepository(db)
+	customerRepo := repository.NewCustomerRepository(db)
+	return service.NewCustomerService(baseRepo, customerRepo)
+}
+
 func NewCustomerController(db *gorm.DB, redisCli *redis.Client) controller.CustomerController {
 	baseRepo := repository.NewBaseRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
@@ -23,7 +29,7 @@ func NewCustomerController(db *gorm.DB, redisCli *redis.Client) controller.Custo
 	pre := presenter.NewPresenter()
 	customerService := service.NewCustomerService(baseRepo, customerRepo)
 	authService := service.NewAuthService(customerRepo, redisClient)
-	customerUsecase := usecase.NewCustomerUsecase(customerService, authService)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService)
 	return controller.NewCustomerController(customerUsecase, pre)
 }
 
@@ -36,6 +42,6 @@ func NewAdminController(db *gorm.DB, redisCli *redis.Client) controller.AdminCon
 	customerService := service.NewCustomerService(baseRepo, customerRepo)
 	authService := service.NewAuthService(customerRepo, redisClient)
 	adminService := service.NewAdminService(customerRepo, adminRepo)
-	adminUsecase := usecase.NewAdminUsecase(adminService, authService, customerService)
+	adminUsecase := usecase.NewAdminUsecase(baseRepo, adminService, authService, customerService)
 	return controller.NewAdminController(adminUsecase, pre)
 }

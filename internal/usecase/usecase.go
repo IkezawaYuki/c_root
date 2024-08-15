@@ -4,18 +4,21 @@ import (
 	"context"
 	"fmt"
 	"github.com/IkezawaYuki/c_root/internal/domain"
+	"github.com/IkezawaYuki/c_root/internal/repository"
 	"github.com/IkezawaYuki/c_root/internal/service"
 )
 
 type CustomerUsecase struct {
+	baseRepository  repository.BaseRepository
 	customerService service.CustomerService
 	authService     service.AuthService
 }
 
-func NewCustomerUsecase(customerService service.CustomerService, authService service.AuthService) CustomerUsecase {
+func NewCustomerUsecase(baseRepo repository.BaseRepository, customerSrv service.CustomerService, authSrv service.AuthService) CustomerUsecase {
 	return CustomerUsecase{
-		customerService: customerService,
-		authService:     authService,
+		baseRepository:  baseRepo,
+		customerService: customerSrv,
+		authService:     authSrv,
 	}
 }
 
@@ -35,17 +38,20 @@ func (c *CustomerUsecase) Login(ctx context.Context, user *domain.User) (string,
 }
 
 type AdminUsecase struct {
+	baseRepository  repository.BaseRepository
 	adminService    service.AdminService
 	authService     service.AuthService
 	customerService service.CustomerService
 }
 
 func NewAdminUsecase(
+	baseRepo repository.BaseRepository,
 	adminSrv service.AdminService,
 	authSrv service.AuthService,
 	customerSrv service.CustomerService,
 ) AdminUsecase {
 	return AdminUsecase{
+		baseRepository:  baseRepo,
 		adminService:    adminSrv,
 		authService:     authSrv,
 		customerService: customerSrv,

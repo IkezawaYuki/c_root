@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/IkezawaYuki/c_root/internal/infrastructure"
+)
 
 func main() {
-	fmt.Println("wao")
+	infrastructure.Run()
 }
