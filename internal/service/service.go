@@ -14,19 +14,22 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log/slog"
+	"os"
 	"strings"
 	"time"
 )
 
 type CustomerService struct {
-	baseRepository     repository.BaseRepository
-	customerRepository repository.CustomerRepository
+	customerRepository  repository.CustomerRepository
+	instagramRepository repository.InstagramRepository
 }
 
-func NewCustomerService(baseRepo repository.BaseRepository, customerRepo repository.CustomerRepository) CustomerService {
+func NewCustomerService(customerRepo repository.CustomerRepository,
+	instagramRepository repository.InstagramRepository,
+) CustomerService {
 	return CustomerService{
-		baseRepository:     baseRepo,
-		customerRepository: customerRepo,
+		customerRepository:  customerRepo,
+		instagramRepository: instagramRepository,
 	}
 }
 
@@ -53,6 +56,78 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *domain.C
 	}).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return domain.ErrDuplicateEmail
+		}
+		return err
+	}
+	return nil
+}
+
+func (s *CustomerService) DeleteCustomer(ctx context.Context, id string) error {
+	panic("implement me")
+}
+
+func (s *CustomerService) GetInstagramPostNotYet(ctx context.Context, customerID string) ([]domain.InstagramPost, error) {
+	records, err := s.instagramRepository.FindNotYetByCustomerID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]domain.InstagramPost, len(records))
+	for i, record := range records {
+		posts[i] = domain.InstagramPost{
+			ID:         record.ID,
+			Caption:    record.Caption,
+			MediaType:  record.Caption,
+			MediaURL:   record.MediaURL,
+			PostStatus: domain.PostStatus(record.PostStatus),
+			Timestamp:  record.Timestamp,
+		}
+	}
+	return posts, nil
+}
+
+func (s *CustomerService) GetInstagramPost(ctx context.Context, customerID string) ([]domain.InstagramPost, error) {
+	records, err := s.instagramRepository.FindByCustomerID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]domain.InstagramPost, len(records))
+	for i, record := range records {
+		posts[i] = domain.InstagramPost{
+			ID:         record.ID,
+			Caption:    record.Caption,
+			MediaType:  record.Caption,
+			MediaURL:   record.MediaURL,
+			PostStatus: domain.PostStatus(record.PostStatus),
+			Timestamp:  record.Timestamp,
+		}
+	}
+	return posts, nil
+}
+
+func (s *CustomerService) SaveInstagramPost(ctx context.Context, instagramPost *domain.InstagramMediaDetail, startDate *time.Time) error {
+	timestamp, err := time.Parse("2006-01-02T15:04:05-0700", instagramPost.Timestamp)
+	if err != nil {
+		return err
+	}
+	if startDate == nil {
+		return errors.New("startDate is required")
+	}
+	status := domain.NotYet
+	if startDate.Before(timestamp) {
+		status = domain.Linked
+	}
+	err = s.instagramRepository.Save(ctx, domain.InstagramDto{
+		ID:         instagramPost.ID,
+		Caption:    instagramPost.Caption,
+		MediaType:  instagramPost.MediaType,
+		MediaURL:   instagramPost.MediaURL,
+		Permalink:  instagramPost.Permalink,
+		PostStatus: int(status),
+		Timestamp:  timestamp,
+	})
+	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateKey) {
+			return nil
 		}
 		return err
 	}
@@ -130,21 +205,71 @@ func (a *AdminService) GetCustomer(ctx context.Context, id string) (*domain.Cust
 	return a.customerRepository.FindByID(ctx, id)
 }
 
-type InstagramService struct {
+type GraphAPI struct {
 	httpClient infrastructure.HttpClient
 }
 
-func NewInstagramService(httpClient infrastructure.HttpClient) InstagramService {
-	return InstagramService{
+func NewGraph(instagramRepo repository.InstagramRepository, httpClient infrastructure.HttpClient) GraphAPI {
+	return GraphAPI{
 		httpClient: httpClient,
 	}
 }
 
-const getMediaList = "/media"
+const getMediaChildURL = "%s?fields=media_url,media_type"
 
-func (i *InstagramService) GetMediaList(ctx context.Context, facebookToken string) ([]string, error) {
+func (i *GraphAPI) getMediaChild(ctx context.Context, facebookToken string, url string) (domain.InstagramMediaContent, error) {
+	var content domain.InstagramMediaContent
+
+}
+
+func (i *GraphAPI) DownloadMedias(ctx context.Context, facebookToken string, detail *domain.InstagramMediaDetail) ([]string, error) {
+	var result []string
+	if detail.MediaType == "VIDEO" {
+
+	} else if detail.MediaType == "IMAGE" {
+
+	} else if detail.MediaType == "CAROUSEL_ALBUM" {
+		for _, child := range detail.Children {
+			childDetail, err := i.getMediaChild(ctx, facebookToken, child)
+			if err != nil {
+				return nil, err
+			}
+			if childDetail.MediaType == "VIDEO" {
+
+			} else if childDetail.MediaType == "IMAGE" {
+
+			}
+		}
+	}
+}
+
+func DownloadVideo(ctx context.Context, url string) error {
+
+}
+
+const getInstagramBusinessAccountURL = "/me?fields=id,name,accounts{instagram_business_account}"
+
+func (i *GraphAPI) GetInstagramBusinessAccountID(ctx context.Context, facebookToken string) (string, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
-		getMediaList,
+		getInstagramBusinessAccountURL,
+		nil,
+		fmt.Sprintf("Bearer %s", facebookToken))
+	if err != nil {
+		return "", err
+	}
+	var instagram domain.GraphApiMeResponse
+	err = json.Unmarshal(resp, &instagram)
+	if err != nil {
+		return "", err
+	}
+	return instagram.InstagramBusinessAccountID(), nil
+}
+
+const getMediaList = "/%s"
+
+func (i *GraphAPI) GetMediaList(ctx context.Context, facebookToken, instagramID string) ([]string, error) {
+	resp, err := i.httpClient.GetRequest(ctx,
+		fmt.Sprintf(getMediaList, instagramID),
 		nil,
 		fmt.Sprintf("Bearer %s", facebookToken))
 	if err != nil {
@@ -157,11 +282,11 @@ func (i *InstagramService) GetMediaList(ctx context.Context, facebookToken strin
 	return detail.ConvertToInstagramMediaList(), nil
 }
 
-const getMediaDetail = "/media/detail"
+const getMediaContent = "/%s?fields=media_type,media_url,id,caption,timestamp,permalink,children"
 
-func (i *InstagramService) GetMediaDetail(ctx context.Context, facebookToken string, id string) (*domain.InstagramMediaDetail, error) {
+func (i *GraphAPI) GetMediaDetail(ctx context.Context, facebookToken string, mediaID string) (*domain.InstagramMediaDetail, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
-		getMediaDetail,
+		fmt.Sprintf(getMediaContent, mediaID),
 		nil,
 		fmt.Sprintf("Bearer %s", facebookToken),
 	)
@@ -175,22 +300,47 @@ func (i *InstagramService) GetMediaDetail(ctx context.Context, facebookToken str
 	return &detail, nil
 }
 
-type WordpressService struct {
+type WordpressRestAPI struct {
 	httpClient infrastructure.HttpClient
 }
 
-func (w *WordpressService) Post() {
+func (w *WordpressRestAPI) Post(ctx context.Context) {
 
 }
 
-func (w *WordpressService) UploadFile() {
+func (w *WordpressRestAPI) UploadFile(ctx context.Context) {
 
 }
 
-type MetaService struct {
+type FileTransfer struct {
 	httpClient infrastructure.HttpClient
 }
 
-func (m *MetaService) GetLongToken() {
+func (f *FileTransfer) DownloadMedias(detail *domain.InstagramMediaDetail) ([]string, error) {
 
+}
+
+func downloadVideo() (string, error) {
+
+}
+
+func (f *FileTransfer) UploadMedia(url string) error {
+
+}
+
+const tempDirectory = "./tmp"
+
+func (f *FileTransfer) MakeTempDirectory() error {
+	err := os.Mkdir(tempDirectory, 0777)
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+func (f *FileTransfer) RemoveTempDirectory() error {
+	return os.RemoveAll(tempDirectory)
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"gorm.io/gorm"
+	"net/url"
 	"time"
 )
 
@@ -12,6 +13,7 @@ var (
 	ErrNotFound       = errors.New("not found")
 	ErrAuthentication = errors.New("authentication err")
 	ErrAuthorization  = errors.New("authorization err")
+	ErrDuplicateKey   = errors.New("duplicate key err")
 )
 
 type Customer struct {
@@ -87,17 +89,85 @@ func (i *InstagramMediaList) ConvertToInstagramMediaList() []string {
 }
 
 type InstagramMediaDetail struct {
-	ID        string `json:"id"`
-	Caption   string `json:"caption"`
-	MediaType string `json:"media_type"`
-	MediaURL  string `json:"media_url"`
-	Timestamp string `json:"timestamp"`
+	ID        string   `json:"id"`
+	Caption   string   `json:"caption"`
+	MediaType string   `json:"media_type"`
+	MediaURL  string   `json:"media_url"`
+	Timestamp string   `json:"timestamp"`
+	Permalink string   `json:"permalink"`
+	Children  []string `json:"children"`
 }
 
-type InstagramDto struct {
-	ID        string
-	Caption   string `json:"title"`
+func (i *InstagramMediaDetail) FileName() (string, error) {
+	return getFilename(i.MediaURL)
+}
+
+type InstagramMediaContent struct {
+	ID        string `json:"id"`
 	MediaType string `json:"media_type"`
 	MediaURL  string `json:"media_url"`
+}
+
+func (i *InstagramMediaContent) FileName() (string, error) {
+	return getFilename(i.MediaURL)
+}
+
+func getFilename(rawURL string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+	return parsedURL.Path, nil
+}
+
+type PostStatus int
+
+type InstagramDto struct {
+	ID         string
+	Caption    string
+	MediaType  string
+	MediaURL   string
+	Permalink  string
+	PostStatus int
+	Timestamp  time.Time
 	gorm.Model
+}
+
+func (i *InstagramDto) TableName() string { return "instagram_posts" }
+
+type InstagramPost struct {
+	ID         string
+	Caption    string
+	MediaType  string
+	MediaURL   string
+	PostStatus PostStatus
+	Timestamp  time.Time
+}
+
+var (
+	NotYet PostStatus = 0
+	Linked PostStatus = 1
+)
+
+type GraphApiMeResponse struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Accounts struct {
+		Data []struct {
+			InstagramBusinessAccount struct {
+				ID string `json:"id"`
+			} `json:"instagram_business_account"`
+			ID string `json:"id"`
+		} `json:"data"`
+		Paging struct {
+			Cursors struct {
+				Before string `json:"before"`
+				After  string `json:"after"`
+			} `json:"cursors"`
+		} `json:"paging"`
+	} `json:"accounts"`
+}
+
+func (r *GraphApiMeResponse) InstagramBusinessAccountID() string {
+	return r.Accounts.Data[0].InstagramBusinessAccount.ID
 }

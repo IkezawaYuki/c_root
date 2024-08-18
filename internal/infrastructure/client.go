@@ -81,7 +81,7 @@ func (c *HttpClient) GetRequest(ctx context.Context, path string, params map[str
 	for k, v := range params {
 		query[k] = []string{fmt.Sprintf("%v", v)}
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseURL+path+query.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+path+query.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -101,4 +101,12 @@ func (c *HttpClient) GetRequest(ctx context.Context, path string, params map[str
 		return nil, fmt.Errorf("%s", string(bodyBytes))
 	}
 	return bodyBytes, nil
+}
+
+func (c *HttpClient) DownloadFile(ctx context.Context, url string) (string, error) {
+
+}
+
+func (c *HttpClient) DownloadVideo(ctx context.Context, url string) (string, error) {
+
 }

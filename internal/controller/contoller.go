@@ -40,12 +40,12 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
 
-func (ctr *CustomerController) GetInstagramMedia(c echo.Context) error {
-	slog.Info("GetInstagramMedia is invoked")
+func (ctr *CustomerController) FetchInstagramMediaFromGraphAPI(c echo.Context) error {
+	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
 	customerID := c.Get("customer_id").(string)
 	ctx := c.Request().Context()
-	mediaList, err := ctr.customerUsecase.GetInstagramMedia(ctx, customerID)
-	return c.JSON(ctr.presenter.Generate(err, mediaList))
+	err := ctr.customerUsecase.FetchInstagramMediaFromGraphAPI(ctx, customerID)
+	return c.JSON(ctr.presenter.Generate(err, nil))
 }
 
 type AdminController struct {
