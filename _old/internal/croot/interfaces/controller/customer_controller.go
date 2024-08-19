@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/IkezawaYuki/c_root/di"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain/entity"
-	"github.com/IkezawaYuki/c_root/internal/croot/interfaces/presenter"
-	"github.com/IkezawaYuki/c_root/internal/croot/interfaces/session"
+	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/internal/croot/domain/entity"
+	"github.com/IkezawaYuki/popple/internal/croot/interfaces/presenter"
+	"github.com/IkezawaYuki/popple/internal/croot/interfaces/session"
 	"github.com/gin-gonic/gin"
 )
 

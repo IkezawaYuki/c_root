@@ -2,8 +2,8 @@ package interfaces
 
 import (
 	"context"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain"
-	"github.com/IkezawaYuki/c_root/internal/croot/infrastructre"
+	"github.com/IkezawaYuki/popple/internal/croot/domain"
+	"github.com/IkezawaYuki/popple/internal/croot/infrastructre"
 )
 
 type CustomerRepository interface {

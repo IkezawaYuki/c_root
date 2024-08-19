@@ -4,27 +4,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/IkezawaYuki/c_root/internal/domain"
-	"github.com/IkezawaYuki/c_root/internal/repository"
-	"github.com/IkezawaYuki/c_root/internal/service"
+	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/repository"
+	"github.com/IkezawaYuki/popple/internal/service"
 )
 
 type CustomerUsecase struct {
-	baseRepository   repository.BaseRepository
-	customerService  service.CustomerService
-	authService      service.AuthService
-	wordpressRestApi service.WordpressRestAPI
-	graphApi         service.GraphAPI
-	fileTransfer     service.FileTransfer
+	baseRepository   *repository.BaseRepository
+	customerService  *service.CustomerService
+	authService      *service.AuthService
+	wordpressRestApi *service.WordpressRestAPI
+	graphApi         *service.GraphAPI
+	fileTransfer     *service.FileService
 }
 
-func NewCustomerUsecase(baseRepo repository.BaseRepository,
-	customerSrv service.CustomerService,
-	authSrv service.AuthService,
-	wordpressRestApi service.WordpressRestAPI,
-	graphApi service.GraphAPI,
-) CustomerUsecase {
-	return CustomerUsecase{
+func NewCustomerUsecase(baseRepo *repository.BaseRepository,
+	customerSrv *service.CustomerService,
+	authSrv *service.AuthService,
+	wordpressRestApi *service.WordpressRestAPI,
+	graphApi *service.GraphAPI,
+) *CustomerUsecase {
+	return &CustomerUsecase{
 		baseRepository:   baseRepo,
 		customerService:  customerSrv,
 		authService:      authSrv,
@@ -77,22 +77,21 @@ func (c *CustomerUsecase) PostToWordpress(ctx context.Context, customerID string
 	if err != nil {
 		return err
 	}
-	notYetPosts, err := c.customerService.GetInstagramPostNotYet(ctx, customer.ID)
+	notYetPosts, err := c.customerService.GetInstagramPostNotYet(ctx, customer.UUID)
 	if err != nil {
 		return err
 	}
-	if err := c.fileTransfer.MakeTempDirectory(); err != nil {
+	if err := c.fileTransfer.MakeTempDirectory(customer.UUID); err != nil {
 		return err
 	}
 	for _, instagram := range notYetPosts {
-		instaDetail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, instagram.ID)
+		instaDetail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, instagram.UUID)
 		if err != nil {
 			return err
 		}
 		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, customer.StartDate); err != nil {
 			return err
 		}
-
 		targetFiles, err := c.graphApi.FetchMedias(ctx, *customer.FacebookToken, instaDetail)
 		if err != nil {
 			return err
@@ -101,15 +100,17 @@ func (c *CustomerUsecase) PostToWordpress(ctx context.Context, customerID string
 		if err != nil {
 			return err
 		}
-		wpMedia, err := c.wordpressRestApi.UploadFiles(ctx, localPathList)
+		wpMedia, err := c.wordpressRestApi.UploadFiles(ctx, customer.WordpressURL, localPathList)
 		if err != nil {
 			return err
 		}
-		wpLink, err := c.wordpressRestApi.CreatePosts(ctx, instaDetail, wpMedia)
+		wpLink, err := c.wordpressRestApi.CreatePosts(ctx, customer.WordpressURL, instaDetail, wpMedia)
 		if err != nil {
 			return err
 		}
-
+		if err := c.customerService.CreateInstagramWordpress(ctx, instaDetail.Permalink, wpLink); err != nil {
+			return err
+		}
 	}
 	if err := c.fileTransfer.RemoveTempDirectory(); err != nil {
 		return err

@@ -3,8 +3,8 @@ package router
 import (
 	"context"
 	"fmt"
-	"github.com/IkezawaYuki/c_root/config"
-	"github.com/IkezawaYuki/c_root/internal/croot/interfaces/middleware"
+	"github.com/IkezawaYuki/popple/config"
+	"github.com/IkezawaYuki/popple/internal/croot/interfaces/middleware"
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"

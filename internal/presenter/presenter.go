@@ -2,7 +2,7 @@ package presenter
 
 import (
 	"errors"
-	"github.com/IkezawaYuki/c_root/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain"
 	"log/slog"
 	"net/http"
 )
@@ -10,8 +10,8 @@ import (
 type Presenter struct {
 }
 
-func NewPresenter() Presenter {
-	return Presenter{}
+func NewPresenter() *Presenter {
+	return &Presenter{}
 }
 
 func (p *Presenter) Generate(err error, body any) (int, any) {

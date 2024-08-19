@@ -5,10 +5,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/IkezawaYuki/c_root/di"
-	"github.com/IkezawaYuki/c_root/internal/domain"
-	"github.com/IkezawaYuki/c_root/internal/infrastructure"
-	"github.com/IkezawaYuki/c_root/internal/service"
+	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/infrastructure"
+	"github.com/IkezawaYuki/popple/internal/service"
 	"os"
 
 	"github.com/spf13/cobra"

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/IkezawaYuki/c_root/config"
+	"github.com/IkezawaYuki/popple/config"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"strings"

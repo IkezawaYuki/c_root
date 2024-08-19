@@ -1,9 +1,9 @@
 package infrastructure
 
 import (
-	"github.com/IkezawaYuki/c_root/di"
-	"github.com/IkezawaYuki/c_root/internal/middleware"
-	"github.com/IkezawaYuki/c_root/internal/presenter"
+	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/internal/middleware"
+	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )

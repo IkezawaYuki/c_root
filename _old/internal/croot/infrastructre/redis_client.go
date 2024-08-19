@@ -3,7 +3,7 @@ package infrastructre
 import (
 	"context"
 	"errors"
-	"github.com/IkezawaYuki/c_root/config"
+	"github.com/IkezawaYuki/popple/config"
 	"github.com/go-redis/redis/v8"
 	"time"
 )

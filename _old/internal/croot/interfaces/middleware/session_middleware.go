@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"github.com/IkezawaYuki/c_root/di"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain/crooterrors"
-	"github.com/IkezawaYuki/c_root/internal/croot/interfaces/presenter"
+	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/internal/croot/domain/crooterrors"
+	"github.com/IkezawaYuki/popple/internal/croot/interfaces/presenter"
 	"github.com/gin-gonic/gin"
 	"github.com/rbcervilla/redisstore/v8"
 )

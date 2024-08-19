@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"github.com/IkezawaYuki/c_root/internal/presenter"
-	"github.com/IkezawaYuki/c_root/internal/service"
+	"github.com/IkezawaYuki/popple/internal/presenter"
+	"github.com/IkezawaYuki/popple/internal/service"
 	"github.com/labstack/echo/v4"
 	"log/slog"
 )
 
-func NewBadgeAuthMiddleware(authService service.AuthService, presenter presenter.Presenter) echo.MiddlewareFunc {
+func NewBatchAuthMiddleware(authService *service.AuthService, presenter *presenter.Presenter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			return next(c)
@@ -15,7 +15,7 @@ func NewBadgeAuthMiddleware(authService service.AuthService, presenter presenter
 	}
 }
 
-func NewAdminAuthMiddleware(authService service.AuthService, presenter presenter.Presenter) echo.MiddlewareFunc {
+func NewAdminAuthMiddleware(authService *service.AuthService, presenter *presenter.Presenter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			slog.Info("AdminAuthMiddleware is invoked")
@@ -28,7 +28,7 @@ func NewAdminAuthMiddleware(authService service.AuthService, presenter presenter
 	}
 }
 
-func NewCustomerAuthMiddleware(authService service.AuthService, presenter presenter.Presenter) echo.MiddlewareFunc {
+func NewCustomerAuthMiddleware(authService *service.AuthService, presenter *presenter.Presenter) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			slog.Info("CustomerAuthMiddleware is invoked")

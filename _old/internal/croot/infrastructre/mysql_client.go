@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/IkezawaYuki/c_root/config"
+	"github.com/IkezawaYuki/popple/config"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )

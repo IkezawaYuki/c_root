@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain/crooterrors"
-	"github.com/IkezawaYuki/c_root/internal/croot/interfaces"
+	"github.com/IkezawaYuki/popple/internal/croot/domain"
+	"github.com/IkezawaYuki/popple/internal/croot/domain/crooterrors"
+	"github.com/IkezawaYuki/popple/internal/croot/interfaces"
 )
 
 type CustomerService interface {

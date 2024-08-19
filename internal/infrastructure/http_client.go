@@ -5,57 +5,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/IkezawaYuki/c_root/config"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 )
 
-func GetMysqlConnection() *gorm.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		config.Env.DatabaseUser,
-		config.Env.DatabasePass,
-		config.Env.DatabaseHost,
-		config.Env.DatabaseName,
-	)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	return db
-}
-
-func GetRedisConnection() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr: config.Env.RedisAddr,
-		DB:   0,
-	})
-}
-
 type HttpClient struct {
-	baseURL string
 }
 
-func NewHttpClient(baseURL string) HttpClient {
-	return HttpClient{
-		baseURL: baseURL,
-	}
+func NewHttpClient() *HttpClient {
+	return &HttpClient{}
 }
 
-func (c *HttpClient) PostRequest(ctx context.Context, path string, reqBody any, authorization string) ([]byte, error) {
+func (c *HttpClient) PostRequest(ctx context.Context, url string, reqBody any, authorization string) ([]byte, error) {
 	client := &http.Client{}
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
 	}
 	body := bytes.NewBuffer(jsonBody)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+path, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +49,9 @@ func (c *HttpClient) PostRequest(ctx context.Context, path string, reqBody any, 
 	return bodyBytes, nil
 }
 
-func (c *HttpClient) GetRequest(ctx context.Context, path string, params map[string]interface{}, authorization string) ([]byte, error) {
+func (c *HttpClient) GetRequest(ctx context.Context, url string, authorization string) ([]byte, error) {
 	client := &http.Client{}
-	query := url.Values{}
-	for k, v := range params {
-		query[k] = []string{fmt.Sprintf("%v", v)}
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+path+query.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +95,7 @@ func (c *HttpClient) UploadFile(ctx context.Context, endpoint, path string, auth
 	if err := writer.Close(); err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+endpoint, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, body)
 	if err != nil {
 		return nil, err
 	}

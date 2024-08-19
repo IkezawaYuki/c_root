@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/IkezawaYuki/c_root/internal/infrastructure"
+	"github.com/IkezawaYuki/popple/internal/infrastructure"
 )
 
 func main() {

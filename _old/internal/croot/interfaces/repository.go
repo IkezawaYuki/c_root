@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"context"
-	"github.com/IkezawaYuki/c_root/internal/croot/infrastructre"
+	"github.com/IkezawaYuki/popple/internal/croot/infrastructre"
 )
 
 type repository struct {

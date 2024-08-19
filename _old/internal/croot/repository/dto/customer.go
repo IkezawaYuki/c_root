@@ -2,7 +2,7 @@ package dto
 
 import (
 	"database/sql"
-	"github.com/IkezawaYuki/c_root/internal/croot/domain"
+	"github.com/IkezawaYuki/popple/internal/croot/domain"
 	"gorm.io/gorm"
 )
 
