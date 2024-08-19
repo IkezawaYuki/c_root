@@ -42,9 +42,8 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *domain.C
 	if err != nil {
 		return err
 	}
-	customer.ID = uuid.New().String()
 	if err := s.customerRepository.Save(ctx, &domain.CustomerDto{
-		ID:             customer.ID,
+		UUID:           uuid.New().String(),
 		Name:           customer.Name,
 		Email:          customer.Email,
 		Password:       string(passwordHash),
@@ -113,7 +112,7 @@ func (s *CustomerService) SaveInstagramPost(ctx context.Context, instagramPost *
 		status = domain.Linked
 	}
 	err = s.instagramRepository.Save(ctx, domain.InstagramDto{
-		ID:         instagramPost.ID,
+		UUID:       uuid.NewString(),
 		Caption:    instagramPost.Caption,
 		MediaType:  instagramPost.MediaType,
 		MediaURL:   instagramPost.MediaURL,
