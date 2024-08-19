@@ -60,9 +60,6 @@ func (c *CustomerUsecase) FetchInstagramMediaFromGraphAPI(ctx context.Context, c
 	if err != nil {
 		return err
 	}
-	if err := c.fileTransfer.MakeTempDirectory(); err != nil {
-		return err
-	}
 	for _, mediaID := range mediaList {
 		instaDetail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, mediaID)
 		if err != nil {
@@ -104,11 +101,11 @@ func (c *CustomerUsecase) PostToWordpress(ctx context.Context, customerID string
 		if err != nil {
 			return err
 		}
-		idList, err := c.wordpressRestApi.UploadFiles(ctx, localPathList)
+		wpMedia, err := c.wordpressRestApi.UploadFiles(ctx, localPathList)
 		if err != nil {
 			return err
 		}
-		posts, err := c.wordpressRestApi.CreatePosts(ctx, instaDetail, idList)
+		wpLink, err := c.wordpressRestApi.CreatePosts(ctx, instaDetail, wpMedia)
 		if err != nil {
 			return err
 		}

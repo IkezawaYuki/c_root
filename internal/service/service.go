@@ -310,39 +310,49 @@ type WordpressRestAPI struct {
 	httpClient infrastructure.HttpClient
 }
 
-func (w *WordpressRestAPI) CreatePosts(ctx context.Context, instaDetail *domain.InstagramMediaDetail, idList []string) error {
-	posts := domain.NewWordpressPosts(instaDetail, idList)
+const wpPostUrl = "/wp/v2/posts"
 
+type CreatePostResponse struct {
+	Link string `json:"link"`
 }
 
-func (w *WordpressRestAPI) UploadFiles(ctx context.Context, pathList []string) ([]string, error) {
-	var mediaIDList []string
+func (w *WordpressRestAPI) CreatePosts(ctx context.Context, instaDetail *domain.InstagramMediaDetail, wpMedia []*domain.WordpressMedia) (string, error) {
+	posts := domain.NewWordpressPosts(instaDetail, wpMedia)
+	resp, err := w.httpClient.PostRequest(ctx, wpPostUrl, posts, "auth")
+	if err != nil {
+		return "", err
+	}
+	var response CreatePostResponse
+	if err := json.Unmarshal(resp, &response); err != nil {
+		return "", err
+	}
+	return response.Link, nil
+}
+
+func (w *WordpressRestAPI) UploadFiles(ctx context.Context, pathList []string) ([]*domain.WordpressMedia, error) {
+	var wordpressMediaList []*domain.WordpressMedia
 	for _, path := range pathList {
-		mediaID, err := w.UploadFile(ctx, path)
+		wordpressMedia, err := w.UploadFile(ctx, path)
 		if err != nil {
 			return nil, err
 		}
-		mediaIDList = append(mediaIDList, mediaID)
+		wordpressMediaList = append(wordpressMediaList, wordpressMedia)
 	}
-	return mediaIDList, nil
+	return wordpressMediaList, nil
 }
 
 const wpMediaUrl = "/wp-json/wp/v2/media"
 
-type RespID struct {
-	ID string `json:"id"`
-}
-
-func (w *WordpressRestAPI) UploadFile(ctx context.Context, path string) (string, error) {
-	var respId RespID
+func (w *WordpressRestAPI) UploadFile(ctx context.Context, path string) (*domain.WordpressMedia, error) {
 	resp, err := w.httpClient.UploadFile(ctx, wpMediaUrl, path, "auth")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if err := json.Unmarshal(resp, &respId); err != nil {
-		return "", err
+	var wordpressMedia domain.WordpressMedia
+	if err := json.Unmarshal(resp, &wordpressMedia); err != nil {
+		return nil, err
 	}
-	return respId.ID, nil
+	return &wordpressMedia, nil
 }
 
 type FileTransfer struct {

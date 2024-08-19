@@ -3,8 +3,10 @@ package domain
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -102,6 +104,10 @@ func (i *InstagramMediaDetail) FileName() (string, error) {
 	return getFilename(i.MediaURL)
 }
 
+func (i *InstagramMediaDetail) Title() string {
+	return strings.Split(i.Caption, " ")[0]
+}
+
 type InstagramMediaContent struct {
 	ID        string `json:"id"`
 	MediaType string `json:"media_type"`
@@ -184,8 +190,60 @@ type WordpressPosts struct {
 	FeaturedMedia string `json:"featured_media"`
 }
 
-func NewWordpressPosts(instaDetail *InstagramMediaDetail, idList []string) WordpressPosts {
-	wordpressPosts := WordpressPosts{}
+type WordpressMedia struct {
+	ID        string `json:"id"`
+	SourceURL string `json:"source_url"`
+	MediaType string `json:"media_type"`
+}
 
+func NewWordpressPosts(instaDetail *InstagramMediaDetail, wpMedia []*WordpressMedia) WordpressPosts {
+	wordpressPosts := WordpressPosts{}
+	wordpressPosts.Title = instaDetail.Title()
+	wordpressPosts.FeaturedMedia = wpMedia[0].ID
+	if instaDetail.MediaType == "IMAGE" {
+		wordpressPosts.Content = fmt.Sprintf("%s%s", getImageHtml(wpMedia[0].SourceURL), getContentHtml(instaDetail.Caption))
+	} else if instaDetail.MediaType == "VIDEO" {
+		wordpressPosts.Content = fmt.Sprintf("%s%s", getVideoHtml(wpMedia[0].SourceURL), getContentHtml(instaDetail.Caption))
+	} else {
+		wordpressPosts.Content = getCarousel(instaDetail, wpMedia)
+	}
+	wordpressPosts.Status = "publish"
 	return wordpressPosts
+}
+
+func getCarousel(instaDetail *InstagramMediaDetail, wpMedia []*WordpressMedia) string {
+	sb := strings.Builder{}
+	sb.WriteString("<div class='a-root-wordpress-instagram-slider'>")
+	for _, media := range wpMedia {
+		if media.MediaType == "IMAGE" {
+			sb.WriteString(getImageHtml(media.SourceURL))
+		} else if media.MediaType == "VIDEO" {
+			sb.WriteString(getVideoHtml(media.SourceURL))
+		}
+	}
+	sb.WriteString("</div>")
+	sb.WriteString(getContentHtml(instaDetail.Caption))
+	return sb.String()
+}
+
+func getVideoHtml(url string) string {
+	return fmt.Sprintf(`<div><img src='%s' style='margin: 0 auto;' width='500px' height='500px'/></div>`, url)
+}
+
+func getImageHtml(url string) string {
+	return fmt.Sprintf(`<div><video src='%s' style='margin: 0 auto;' width='500px' height='500px' controls>
+Sorry, your browser does not support embedded videos.</video></div>`, url)
+}
+
+func getContentHtml(caption string) string {
+	sb := strings.Builder{}
+	sb.WriteString("<p>")
+	for i, row := range strings.Split(caption, "/n") {
+		if i != 0 {
+			sb.WriteString("<br>")
+		}
+		sb.WriteString(row)
+	}
+	sb.WriteString("</p>")
+	return sb.String()
 }
