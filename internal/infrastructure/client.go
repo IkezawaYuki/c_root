@@ -10,8 +10,11 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 )
 
 func GetMysqlConnection() *gorm.DB {
@@ -103,10 +106,48 @@ func (c *HttpClient) GetRequest(ctx context.Context, path string, params map[str
 	return bodyBytes, nil
 }
 
-func (c *HttpClient) DownloadFile(ctx context.Context, url string) (string, error) {
+func (c *HttpClient) UploadFile(ctx context.Context, endpoint, path string, authorization string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = file.Close()
+	}()
 
-}
-
-func (c *HttpClient) DownloadVideo(ctx context.Context, url string) (string, error) {
-
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", filepath.Base(path))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+	if err != nil {
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", authorization)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+		return nil, fmt.Errorf("%s", string(bodyBytes))
+	}
+	return bodyBytes, nil
 }

@@ -60,26 +60,16 @@ func (c *CustomerUsecase) FetchInstagramMediaFromGraphAPI(ctx context.Context, c
 	if err != nil {
 		return err
 	}
+	if err := c.fileTransfer.MakeTempDirectory(); err != nil {
+		return err
+	}
 	for _, mediaID := range mediaList {
-		detail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, mediaID)
+		instaDetail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, mediaID)
 		if err != nil {
 			return err
 		}
-
-		localPathList, err := c.graphApi.DownloadMedias(ctx, *customer.FacebookToken, detail)
-		if err != nil {
+		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, customer.StartDate); err != nil {
 			return err
-		}
-
-		if err := c.customerService.SaveInstagramPost(ctx, detail, customer.StartDate); err != nil {
-			return err
-		}
-		notYetPosts, err := c.customerService.GetInstagramPostNotYet(ctx, customer.ID)
-		if err != nil {
-			return err
-		}
-		for _, post := range notYetPosts {
-
 		}
 	}
 	return err
@@ -94,44 +84,38 @@ func (c *CustomerUsecase) PostToWordpress(ctx context.Context, customerID string
 	if err != nil {
 		return err
 	}
+	if err := c.fileTransfer.MakeTempDirectory(); err != nil {
+		return err
+	}
 	for _, instagram := range notYetPosts {
-		if err := c.fileTransfer.MakeTempDirectory(); err != nil {
+		instaDetail, err := c.graphApi.GetMediaDetail(ctx, *customer.FacebookToken, instagram.ID)
+		if err != nil {
+			return err
+		}
+		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, customer.StartDate); err != nil {
 			return err
 		}
 
-		//if detail.MediaType == "CAROUSEL_ALBUM" {
-		//
-		//	for _, child := range detail.Children {
-		//
-		//	}
-		//} else if detail.MediaType == "VIDEO" {
-		//
-		//} else if detail.MediaType == "IMAGE" {
-		//
-		//}
-
-		// インスタグラムの画像をローカルにダウンロードする
-		//filePathList, err := c.graphApi.DownloadMedias(detail)
-		//if err != nil {
-		//	return err
-		//}
-		uploadFiles := make([]string, 0, len(filePathList))
-		for _, filePath := range filePathList {
-			// // ローカルのファイルをWordpressにファイルアップロードする
-			c.wordpressRestApi.UploadFile()
+		targetFiles, err := c.graphApi.FetchMedias(ctx, *customer.FacebookToken, instaDetail)
+		if err != nil {
+			return err
 		}
-
-		// // ローカルのファイル削除する
-		if err := c.fileTransfer.RemoveTempDirectory(); err != nil {
+		localPathList, err := c.fileTransfer.DownloadMedias(ctx, targetFiles)
+		if err != nil {
+			return err
+		}
+		idList, err := c.wordpressRestApi.UploadFiles(ctx, localPathList)
+		if err != nil {
+			return err
+		}
+		posts, err := c.wordpressRestApi.CreatePosts(ctx, instaDetail, idList)
+		if err != nil {
 			return err
 		}
 
-		// Wordpressに投稿する
-		c.wordpressRestApi.Post(ctx, instagram)
-
-		// DBのレコードを投稿済みに更新する
-		c.customerService.UpdateInstagramPost(ctx)
-
+	}
+	if err := c.fileTransfer.RemoveTempDirectory(); err != nil {
+		return err
 	}
 	return nil
 }

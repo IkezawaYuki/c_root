@@ -171,3 +171,21 @@ type GraphApiMeResponse struct {
 func (r *GraphApiMeResponse) InstagramBusinessAccountID() string {
 	return r.Accounts.Data[0].InstagramBusinessAccount.ID
 }
+
+type Media struct {
+	Url  string
+	Type string
+}
+
+type WordpressPosts struct {
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	Status        string `json:"status"`
+	FeaturedMedia string `json:"featured_media"`
+}
+
+func NewWordpressPosts(instaDetail *InstagramMediaDetail, idList []string) WordpressPosts {
+	wordpressPosts := WordpressPosts{}
+
+	return wordpressPosts
+}

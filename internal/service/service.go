@@ -13,8 +13,11 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"io"
 	"log/slog"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -217,34 +220,37 @@ func NewGraph(instagramRepo repository.InstagramRepository, httpClient infrastru
 
 const getMediaChildURL = "%s?fields=media_url,media_type"
 
-func (i *GraphAPI) getMediaChild(ctx context.Context, facebookToken string, url string) (domain.InstagramMediaContent, error) {
+func (i *GraphAPI) getMediaChild(ctx context.Context, facebookToken string, mediaID string) (*domain.InstagramMediaContent, error) {
+	resp, err := i.httpClient.GetRequest(ctx, fmt.Sprintf(getMediaChildURL, mediaID), nil, fmt.Sprintf("Bearer %s", facebookToken))
+	if err != nil {
+		return nil, err
+	}
 	var content domain.InstagramMediaContent
-
+	if err := json.Unmarshal(resp, &content); err != nil {
+		return nil, err
+	}
+	return &content, nil
 }
 
-func (i *GraphAPI) DownloadMedias(ctx context.Context, facebookToken string, detail *domain.InstagramMediaDetail) ([]string, error) {
-	var result []string
-	if detail.MediaType == "VIDEO" {
-
-	} else if detail.MediaType == "IMAGE" {
-
-	} else if detail.MediaType == "CAROUSEL_ALBUM" {
+func (i *GraphAPI) FetchMedias(ctx context.Context, facebookToken string, detail *domain.InstagramMediaDetail) ([]domain.Media, error) {
+	if detail.MediaType == "CAROUSEL_ALBUM" {
+		medias := make([]domain.Media, len(detail.Children))
 		for _, child := range detail.Children {
-			childDetail, err := i.getMediaChild(ctx, facebookToken, child)
+			cMedia, err := i.getMediaChild(ctx, facebookToken, child)
 			if err != nil {
 				return nil, err
 			}
-			if childDetail.MediaType == "VIDEO" {
-
-			} else if childDetail.MediaType == "IMAGE" {
-
-			}
+			medias = append(medias, domain.Media{
+				Url:  cMedia.MediaURL,
+				Type: cMedia.MediaType,
+			})
 		}
+		return medias, nil
 	}
-}
 
-func DownloadVideo(ctx context.Context, url string) error {
-
+	return []domain.Media{
+		{detail.MediaType, detail.MediaURL},
+	}, nil
 }
 
 const getInstagramBusinessAccountURL = "/me?fields=id,name,accounts{instagram_business_account}"
@@ -304,28 +310,76 @@ type WordpressRestAPI struct {
 	httpClient infrastructure.HttpClient
 }
 
-func (w *WordpressRestAPI) Post(ctx context.Context) {
+func (w *WordpressRestAPI) CreatePosts(ctx context.Context, instaDetail *domain.InstagramMediaDetail, idList []string) error {
+	posts := domain.NewWordpressPosts(instaDetail, idList)
 
 }
 
-func (w *WordpressRestAPI) UploadFile(ctx context.Context) {
+func (w *WordpressRestAPI) UploadFiles(ctx context.Context, pathList []string) ([]string, error) {
+	var mediaIDList []string
+	for _, path := range pathList {
+		mediaID, err := w.UploadFile(ctx, path)
+		if err != nil {
+			return nil, err
+		}
+		mediaIDList = append(mediaIDList, mediaID)
+	}
+	return mediaIDList, nil
+}
 
+const wpMediaUrl = "/wp-json/wp/v2/media"
+
+type RespID struct {
+	ID string `json:"id"`
+}
+
+func (w *WordpressRestAPI) UploadFile(ctx context.Context, path string) (string, error) {
+	var respId RespID
+	resp, err := w.httpClient.UploadFile(ctx, wpMediaUrl, path, "auth")
+	if err != nil {
+		return "", err
+	}
+	if err := json.Unmarshal(resp, &respId); err != nil {
+		return "", err
+	}
+	return respId.ID, nil
 }
 
 type FileTransfer struct {
 	httpClient infrastructure.HttpClient
 }
 
-func (f *FileTransfer) DownloadMedias(detail *domain.InstagramMediaDetail) ([]string, error) {
-
+func (f *FileTransfer) DownloadMedias(ctx context.Context, medias []domain.Media) ([]string, error) {
+	var result []string
+	for _, media := range medias {
+		path, err := f.DownloadMedia(ctx, media)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, path)
+	}
+	return result, nil
 }
 
-func downloadVideo() (string, error) {
-
-}
-
-func (f *FileTransfer) UploadMedia(url string) error {
-
+func (f *FileTransfer) DownloadMedia(ctx context.Context, media domain.Media) (string, error) {
+	resp, err := http.Get(media.Url)
+	if err != nil {
+		return "", err
+	}
+	filename := filepath.Base(media.Url)
+	filePath := filepath.Join(tempDirectory, filename)
+	out, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = out.Close()
+	}()
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return filePath, nil
 }
 
 const tempDirectory = "./tmp"
