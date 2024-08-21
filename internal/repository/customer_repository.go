@@ -15,6 +15,12 @@ func NewCustomerRepository(db *gorm.DB) *CustomerRepository {
 	return &CustomerRepository{db: db}
 }
 
+func (c *CustomerRepository) FindAll(ctx context.Context) ([]domain.CustomerDto, error) {
+	var dto []domain.CustomerDto
+	err := c.db.WithContext(ctx).Find(&dto).Error
+	return dto, err
+}
+
 func (c *CustomerRepository) FindByID(ctx context.Context, id string) (*domain.Customer, error) {
 	var customer domain.CustomerDto
 	result := c.db.WithContext(ctx).First(&customer, "id = ?", id)

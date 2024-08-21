@@ -16,6 +16,7 @@ func main() {
 	adminController := di.NewAdminController(db, redisCli)
 	authService := di.NewAuthService(db, redisCli)
 	pres := presenter.NewPresenter()
+	batchController := di.NewBatchController(db, redisCli)
 
 	customerAuthMiddleware := middleware.NewCustomerAuthMiddleware(authService, pres)
 	adminAuthMiddleware := middleware.NewAdminAuthMiddleware(authService, pres)
@@ -48,11 +49,9 @@ func main() {
 	})
 	adminHandler.POST("/register/customer", adminController.RegisterCustomer)
 
-	badgeHandler := e.Group("/badge")
-	badgeHandler.Use(badgeAuthMiddleware)
-	badgeHandler.GET("/:id", func(c echo.Context) error {
-		return c.JSON(http.StatusNotImplemented, nil)
-	})
+	batchHandler := e.Group("/batch")
+	batchHandler.Use(badgeAuthMiddleware)
+	batchHandler.GET("/execute", batchController.Execute)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

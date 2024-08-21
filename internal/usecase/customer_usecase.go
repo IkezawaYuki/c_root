@@ -18,11 +18,13 @@ type CustomerUsecase struct {
 	fileTransfer     *service.FileService
 }
 
-func NewCustomerUsecase(baseRepo *repository.BaseRepository,
+func NewCustomerUsecase(
+	baseRepo *repository.BaseRepository,
 	customerSrv *service.CustomerService,
 	authSrv *service.AuthService,
 	wordpressRestApi *service.WordpressRestAPI,
 	graphApi *service.GraphAPI,
+	fileTransfer *service.FileService,
 ) *CustomerUsecase {
 	return &CustomerUsecase{
 		baseRepository:   baseRepo,
@@ -30,7 +32,12 @@ func NewCustomerUsecase(baseRepo *repository.BaseRepository,
 		authService:      authSrv,
 		wordpressRestApi: wordpressRestApi,
 		graphApi:         graphApi,
+		fileTransfer:     fileTransfer,
 	}
+}
+
+func (c *CustomerUsecase) FindAll(ctx context.Context) ([]domain.Customer, error) {
+	return c.customerService.FindAll(ctx)
 }
 
 func (c *CustomerUsecase) GetCustomer(ctx context.Context, id string) (*domain.Customer, error) {

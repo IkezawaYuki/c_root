@@ -29,6 +29,19 @@ func NewCustomerService(
 	}
 }
 
+func (s *CustomerService) FindAll(ctx context.Context) ([]domain.Customer, error) {
+	dtoList, err := s.customerRepository.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	customers := make([]domain.Customer, len(dtoList))
+	for i, dto := range dtoList {
+		customer := dto.ConvertToCustomer()
+		customers[i] = *customer
+	}
+	return customers, nil
+}
+
 func (s *CustomerService) GetCustomer(ctx context.Context, id string) (*domain.Customer, error) {
 	return s.customerRepository.FindByID(ctx, id)
 }

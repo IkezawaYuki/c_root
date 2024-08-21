@@ -36,7 +36,8 @@ func NewCustomerController(db *gorm.DB, redisCli *redis.Client) controller.Custo
 	httpClient := infrastructure.NewHttpClient()
 	wordpressRestApi := service.NewWordpressRestAPI(httpClient)
 	graphApi := service.NewGraph(httpClient)
-	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi)
+	fileTransfer := service.NewFileService(httpClient)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
 	return controller.NewCustomerController(customerUsecase, pre)
 }
 
@@ -53,4 +54,23 @@ func NewAdminController(db *gorm.DB, redisCli *redis.Client) controller.AdminCon
 	adminService := service.NewAdminService(customerRepo, adminRepo)
 	adminUsecase := usecase.NewAdminUsecase(baseRepo, adminService, authService, customerService)
 	return controller.NewAdminController(adminUsecase, pre)
+}
+
+func NewBatchController(db *gorm.DB, redisCli *redis.Client) controller.BatchController {
+	baseRepo := repository.NewBaseRepository(db)
+	customerRepo := repository.NewCustomerRepository(db)
+	instaRepo := repository.NewInstagramRepository(db)
+	instagramWordpressRepo := repository.NewInstagramWordpressRepository(db)
+	redisClient := repository.NewRedisClient(redisCli)
+	pre := presenter.NewPresenter()
+	customerService := service.NewCustomerService(customerRepo, instaRepo, instagramWordpressRepo)
+	authService := service.NewAuthService(customerRepo, redisClient)
+	httpClient := infrastructure.NewHttpClient()
+	wordpressRestApi := service.NewWordpressRestAPI(httpClient)
+	graphApi := service.NewGraph(httpClient)
+	fileTransfer := service.NewFileService(httpClient)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
+	slack := service.NewSlackService(httpClient)
+	batchUsecase := usecase.NewBatchUsecase(customerUsecase, slack)
+	return controller.NewBatchController(batchUsecase, pre)
 }
