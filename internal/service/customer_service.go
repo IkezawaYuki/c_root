@@ -75,7 +75,7 @@ func (s *CustomerService) DeleteCustomer(ctx context.Context, id string) error {
 }
 
 func (s *CustomerService) GetInstagramPostNotYet(ctx context.Context, customerID string) ([]domain.InstagramPost, error) {
-	records, err := s.instagramRepository.FindNotYetByCustomerID(ctx, customerID)
+	records, err := s.instagramRepository.FindNotYetByCustomerUUID(ctx, customerID)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (s *CustomerService) GetInstagramPostNotYet(ctx context.Context, customerID
 }
 
 func (s *CustomerService) GetInstagramPost(ctx context.Context, customerID string) ([]domain.InstagramPost, error) {
-	records, err := s.instagramRepository.FindByCustomerID(ctx, customerID)
+	records, err := s.instagramRepository.FindByCustomerUUID(ctx, customerID)
 	if err != nil {
 		return nil, err
 	}

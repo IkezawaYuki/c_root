@@ -63,7 +63,7 @@ func Execute() {
 	}
 }
 
-var srv service.CustomerService
+var srv *service.CustomerService
 
 func init() {
 	// Here you will define your flags and configuration settings.
@@ -77,6 +77,5 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	db := infrastructure.GetMysqlConnection()
-	redisCli := infrastructure.GetRedisConnection()
-	srv = di.NewCustomerService(db, redisCli)
+	srv = di.NewCustomerService(db)
 }

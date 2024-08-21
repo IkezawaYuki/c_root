@@ -47,11 +47,23 @@ func (c *CustomerDto) ConvertToCustomer() *Customer {
 	return &customer
 }
 
+type AdminDto struct {
+	UUID     string
+	Name     string
+	Email    string
+	Password string
+	gorm.Model
+}
+
+func (AdminDto) TableName() string { return "admins" }
+
 type InstagramWordpressDto struct {
-	UUID          string
-	MediaID       int
-	WordpressLink string
-	InstagramLink string
+	UUID             string
+	CustomerUUID     string
+	InstagramMediaID int
+	InstagramLink    string
+	WordpressMediaID int
+	WordpressLink    string
 	gorm.Model
 }
 

@@ -83,3 +83,20 @@ func NewAdminService(customerRepo *repository.CustomerRepository, adminRepo *rep
 func (a *AdminService) GetCustomer(ctx context.Context, id string) (*domain.Customer, error) {
 	return a.customerRepository.FindByID(ctx, id)
 }
+
+func (a *AdminService) FindAll(ctx context.Context) ([]domain.Admin, error) {
+	dtoList, err := a.adminRepository.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	admins := make([]domain.Admin, len(dtoList))
+	for i, dto := range dtoList {
+		admins[i] = domain.Admin{
+			ID:    dto.ID,
+			UUID:  dto.UUID,
+			Name:  dto.Name,
+			Email: dto.Email,
+		}
+	}
+	return admins, nil
+}

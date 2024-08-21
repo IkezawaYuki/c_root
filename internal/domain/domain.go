@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type PostStatus int
 
 type GraphApiMeResponse struct {
@@ -28,4 +30,14 @@ func (r *GraphApiMeResponse) InstagramBusinessAccountID() string {
 type Media struct {
 	Url  string
 	Type string
+}
+
+type LinkHistory struct {
+	ID               int       `json:"id"`
+	UUID             string    `json:"uuid"`
+	InstagramMediaID int       `json:"instagram_media_id"`
+	InstagramLink    string    `json:"instagram_link"`
+	WordpressMediaID int       `json:"wordpress_media_id"`
+	WordpressLink    string    `json:"wordpress_link"`
+	CreateAt         time.Time `json:"create_at"`
 }

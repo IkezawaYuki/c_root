@@ -15,13 +15,13 @@ func NewInstagramRepository(db *gorm.DB) *InstagramRepository {
 	return &InstagramRepository{db: db}
 }
 
-func (i *InstagramRepository) FindByCustomerID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
+func (i *InstagramRepository) FindByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
 	var dto []domain.InstagramDto
 	err := i.db.WithContext(ctx).Find(&dto, "customer_id = ?", customerID).Error
 	return dto, err
 }
 
-func (i *InstagramRepository) FindNotYetByCustomerID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
+func (i *InstagramRepository) FindNotYetByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
 	var dto []domain.InstagramDto
 	err := i.db.WithContext(ctx).Find(&dto, "customer_id = ? and post_status = 0", customerID).Error
 	return dto, err

@@ -69,8 +69,8 @@ func NewBatchController(db *gorm.DB, redisCli *redis.Client) controller.BatchCon
 	wordpressRestApi := service.NewWordpressRestAPI(httpClient)
 	graphApi := service.NewGraph(httpClient)
 	fileTransfer := service.NewFileService(httpClient)
-	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
 	slack := service.NewSlackService(httpClient)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
 	batchUsecase := usecase.NewBatchUsecase(customerUsecase, slack)
 	return controller.NewBatchController(batchUsecase, pre)
 }
