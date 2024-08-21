@@ -29,6 +29,7 @@ func main() {
 	})
 
 	e.POST("/customer/login", customerController.Login)
+	e.POST("/admin/login", adminController.Login)
 
 	customerHandler := e.Group("/customer")
 	customerHandler.Use(customerAuthMiddleware)

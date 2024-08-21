@@ -28,3 +28,12 @@ func (a *AdminController) RegisterCustomer(c echo.Context) error {
 	err := a.adminUsecase.RegisterCustomer(c.Request().Context(), &customer)
 	return c.JSON(a.presenter.Generate(err, customer))
 }
+
+func (a *AdminController) Login(c echo.Context) error {
+	var user domain.User
+	if err := c.Bind(&user); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	token, err := a.adminUsecase.Login(c.Request().Context(), &user)
+	return c.JSON(a.presenter.Generate(err, token))
+}

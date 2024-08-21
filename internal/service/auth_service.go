@@ -56,7 +56,7 @@ func (a *AuthService) GenerateJWTCustomer(c *domain.Customer) (string, error) {
 	claims := jwt.MapClaims{
 		"iss":   "popple",
 		"aud":   "customer",
-		"sub":   c.ID,
+		"sub":   c.UUID,
 		"email": c.Email,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
@@ -64,8 +64,23 @@ func (a *AuthService) GenerateJWTCustomer(c *domain.Customer) (string, error) {
 	return token.SignedString([]byte(config.Env.AccessSecretKey))
 }
 
-func (a *AuthService) CheckPassword(user *domain.User, customer *domain.Customer) error {
-	return bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(user.Password))
+func (a *AuthService) GenerateJWTAdmin(admin *domain.Admin) (string, error) {
+	claims := jwt.MapClaims{
+		"iss":   "popple",
+		"aud":   "admin",
+		"sub":   admin.UUID,
+		"email": admin.Email,
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(config.Env.AccessSecretKey))
+}
+
+func (a *AuthService) CheckPassword(user *domain.User, password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(user.Password)); err != nil {
+		return fmt.Errorf("password is incorrect: %s, %v", err.Error(), domain.ErrAuthorization)
+	}
+	return nil
 }
 
 type AdminService struct {
@@ -80,7 +95,7 @@ func NewAdminService(customerRepo *repository.CustomerRepository, adminRepo *rep
 	}
 }
 
-func (a *AdminService) GetCustomer(ctx context.Context, id string) (*domain.Customer, error) {
+func (a *AdminService) GetCustomerByID(ctx context.Context, id string) (*domain.Customer, error) {
 	return a.customerRepository.FindByID(ctx, id)
 }
 
@@ -99,4 +114,18 @@ func (a *AdminService) FindAll(ctx context.Context) ([]domain.Admin, error) {
 		}
 	}
 	return admins, nil
+}
+
+func (a *AdminService) FindByEmail(ctx context.Context, email string) (*domain.Admin, error) {
+	dto, err := a.adminRepository.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Admin{
+		ID:       dto.ID,
+		UUID:     dto.UUID,
+		Name:     dto.Name,
+		Password: dto.Password,
+		Email:    dto.Email,
+	}, nil
 }

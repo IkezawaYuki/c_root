@@ -7,10 +7,10 @@ import (
 )
 
 type LinkHistoryService struct {
-	instaWordpressRepo repository.InstagramWordpressRepository
+	instaWordpressRepo *repository.InstagramWordpressRepository
 }
 
-func NewLinkHistoryService(instaWordpressRepo repository.InstagramWordpressRepository) *LinkHistoryService {
+func NewLinkHistoryService(instaWordpressRepo *repository.InstagramWordpressRepository) *LinkHistoryService {
 	return &LinkHistoryService{
 		instaWordpressRepo: instaWordpressRepo,
 	}

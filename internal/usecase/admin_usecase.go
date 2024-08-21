@@ -35,8 +35,15 @@ func (a *AdminUsecase) RegisterCustomer(ctx context.Context, customer *domain.Cu
 	return a.customerService.CreateCustomer(ctx, customer)
 }
 
-func (a *AdminUsecase) Login(ctx context.Context, user *domain.User) error {
-	return nil
+func (a *AdminUsecase) Login(ctx context.Context, user *domain.User) (string, error) {
+	customer, err := a.adminService.FindByEmail(ctx, user.Email)
+	if err != nil {
+		return "", domain.ErrNotFound
+	}
+	if err := a.authService.CheckPassword(user, customer.Password); err != nil {
+		return "", err
+	}
+	return a.authService.GenerateJWTAdmin(customer)
 }
 
 func (a *AdminUsecase) GetCustomers(ctx context.Context) ([]domain.Customer, error) {

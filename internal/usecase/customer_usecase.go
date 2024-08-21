@@ -10,29 +10,32 @@ import (
 )
 
 type CustomerUsecase struct {
-	baseRepository   *repository.BaseRepository
-	customerService  *service.CustomerService
-	authService      *service.AuthService
-	wordpressRestApi *service.WordpressRestAPI
-	graphApi         *service.GraphAPI
-	fileTransfer     *service.FileService
+	baseRepository     *repository.BaseRepository
+	customerService    *service.CustomerService
+	authService        *service.AuthService
+	linkHistoryService *service.LinkHistoryService
+	wordpressRestApi   *service.WordpressRestAPI
+	graphApi           *service.GraphAPI
+	fileTransfer       *service.FileService
 }
 
 func NewCustomerUsecase(
 	baseRepo *repository.BaseRepository,
 	customerSrv *service.CustomerService,
 	authSrv *service.AuthService,
+	linkHistoryService *service.LinkHistoryService,
 	wordpressRestApi *service.WordpressRestAPI,
 	graphApi *service.GraphAPI,
 	fileTransfer *service.FileService,
 ) *CustomerUsecase {
 	return &CustomerUsecase{
-		baseRepository:   baseRepo,
-		customerService:  customerSrv,
-		authService:      authSrv,
-		wordpressRestApi: wordpressRestApi,
-		graphApi:         graphApi,
-		fileTransfer:     fileTransfer,
+		baseRepository:     baseRepo,
+		customerService:    customerSrv,
+		authService:        authSrv,
+		linkHistoryService: linkHistoryService,
+		wordpressRestApi:   wordpressRestApi,
+		graphApi:           graphApi,
+		fileTransfer:       fileTransfer,
 	}
 }
 
@@ -49,7 +52,7 @@ func (c *CustomerUsecase) Login(ctx context.Context, user *domain.User) (string,
 	if err != nil {
 		return "", err
 	}
-	if err := c.authService.CheckPassword(user, customer); err != nil {
+	if err := c.authService.CheckPassword(user, customer.Password); err != nil {
 		return "", fmt.Errorf("invalid password: %w", err)
 	}
 	return c.authService.GenerateJWTCustomer(customer)

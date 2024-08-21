@@ -33,11 +33,12 @@ func NewCustomerController(db *gorm.DB, redisCli *redis.Client) controller.Custo
 	pre := presenter.NewPresenter()
 	customerService := service.NewCustomerService(customerRepo, instaRepo, instagramWordpressRepo)
 	authService := service.NewAuthService(customerRepo, redisClient)
+	linkHistoryService := service.NewLinkHistoryService(instagramWordpressRepo)
 	httpClient := infrastructure.NewHttpClient()
 	wordpressRestApi := service.NewWordpressRestAPI(httpClient)
 	graphApi := service.NewGraph(httpClient)
 	fileTransfer := service.NewFileService(httpClient)
-	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, linkHistoryService, wordpressRestApi, graphApi, fileTransfer)
 	return controller.NewCustomerController(customerUsecase, pre)
 }
 
@@ -47,12 +48,13 @@ func NewAdminController(db *gorm.DB, redisCli *redis.Client) controller.AdminCon
 	adminRepo := repository.NewAdminRepository(db)
 	instaRepo := repository.NewInstagramRepository(db)
 	instagramWordpressRepo := repository.NewInstagramWordpressRepository(db)
+	linkHistoryService := service.NewLinkHistoryService(instagramWordpressRepo)
 	redisClient := repository.NewRedisClient(redisCli)
 	pre := presenter.NewPresenter()
 	customerService := service.NewCustomerService(customerRepo, instaRepo, instagramWordpressRepo)
 	authService := service.NewAuthService(customerRepo, redisClient)
 	adminService := service.NewAdminService(customerRepo, adminRepo)
-	adminUsecase := usecase.NewAdminUsecase(baseRepo, adminService, authService, customerService)
+	adminUsecase := usecase.NewAdminUsecase(baseRepo, adminService, authService, customerService, linkHistoryService)
 	return controller.NewAdminController(adminUsecase, pre)
 }
 
@@ -65,12 +67,13 @@ func NewBatchController(db *gorm.DB, redisCli *redis.Client) controller.BatchCon
 	pre := presenter.NewPresenter()
 	customerService := service.NewCustomerService(customerRepo, instaRepo, instagramWordpressRepo)
 	authService := service.NewAuthService(customerRepo, redisClient)
+	linkHistoryService := service.NewLinkHistoryService(instagramWordpressRepo)
 	httpClient := infrastructure.NewHttpClient()
 	wordpressRestApi := service.NewWordpressRestAPI(httpClient)
 	graphApi := service.NewGraph(httpClient)
 	fileTransfer := service.NewFileService(httpClient)
 	slack := service.NewSlackService(httpClient)
-	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, wordpressRestApi, graphApi, fileTransfer)
+	customerUsecase := usecase.NewCustomerUsecase(baseRepo, customerService, authService, linkHistoryService, wordpressRestApi, graphApi, fileTransfer)
 	batchUsecase := usecase.NewBatchUsecase(customerUsecase, slack)
 	return controller.NewBatchController(batchUsecase, pre)
 }

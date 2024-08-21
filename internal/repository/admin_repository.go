@@ -25,3 +25,9 @@ func (a *AdminRepository) FindById(ctx context.Context, id uint64) (*domain.Admi
 	err := a.db.WithContext(ctx).First(&admin, id).Error
 	return &admin, err
 }
+
+func (a *AdminRepository) FindByEmail(ctx context.Context, email string) (*domain.AdminDto, error) {
+	var admin domain.AdminDto
+	err := a.db.WithContext(ctx).First(&admin, "email = ?", email).Error
+	return &admin, err
+}
