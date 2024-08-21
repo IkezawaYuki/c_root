@@ -48,8 +48,27 @@ func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
 	return claims["sub"].(string), nil
 }
 
-func (a *AuthService) IsAdminLogin() (bool, error) {
-	return true, nil
+func (a *AuthService) IsAdminLogin(tokenString string) (string, error) {
+	slog.Info("IsAdminLogin is invoked")
+	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.Env.AccessSecretKey), nil
+	})
+	if err != nil {
+		slog.Info(err.Error())
+		return "", domain.ErrAuthorization
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return "", domain.ErrAuthorization
+	}
+	if !claims.VerifyAudience("admin", true) {
+		return "", domain.ErrAuthentication
+	}
+	return claims["sub"].(string), nil
 }
 
 func (a *AuthService) GenerateJWTCustomer(c *domain.Customer) (string, error) {

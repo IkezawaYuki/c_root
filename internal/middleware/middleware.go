@@ -19,10 +19,13 @@ func NewAdminAuthMiddleware(authService *service.AuthService, presenter *present
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			slog.Info("AdminAuthMiddleware is invoked")
-			login, err := authService.IsAdminLogin()
-			if !login {
-				return c.JSON(presenter.Generate(err, login))
+			token := c.Request().Header.Get("Authorization")
+			adminUuid, err := authService.IsAdminLogin(token)
+			if err != nil {
+				return c.JSON(presenter.Generate(err, nil))
 			}
+			slog.Info("AdminAuthMiddleware is OK")
+			c.Set("admin_id", adminUuid)
 			return next(c)
 		}
 	}
@@ -37,7 +40,7 @@ func NewCustomerAuthMiddleware(authService *service.AuthService, presenter *pres
 			if err != nil {
 				return c.JSON(presenter.Generate(err, nil))
 			}
-			slog.Info("login: " + customerID)
+			slog.Info("CustomerAuthMiddleware is OK")
 			c.Set("customer_id", customerID)
 			return next(c)
 		}
