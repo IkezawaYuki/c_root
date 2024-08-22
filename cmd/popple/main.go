@@ -15,8 +15,8 @@ func main() {
 	customerController := di.NewCustomerController(db, redisCli)
 	adminController := di.NewAdminController(db, redisCli)
 	authService := di.NewAuthService(db, redisCli)
-	pres := presenter.NewPresenter()
 	batchController := di.NewBatchController(db, redisCli)
+	pres := presenter.NewPresenter()
 
 	customerAuthMiddleware := middleware.NewCustomerAuthMiddleware(authService, pres)
 	adminAuthMiddleware := middleware.NewAdminAuthMiddleware(authService, pres)
