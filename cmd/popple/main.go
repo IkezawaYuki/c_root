@@ -2,13 +2,21 @@ package main
 
 import (
 	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/docs"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
 	"github.com/IkezawaYuki/popple/internal/middleware"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"net/http"
 )
 
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
 	db := infrastructure.GetMysqlConnection()
 	redisCli := infrastructure.GetRedisConnection()
@@ -27,32 +35,44 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
+	e.Group("/api/v1")
+	{
+		e.POST("/customer/login", customerController.Login)
+		e.POST("/admin/login", adminController.Login)
 
-	e.POST("/customer/login", customerController.Login)
-	e.POST("/admin/login", adminController.Login)
+		customerHandler := e.Group("/customer")
+		customerHandler.Use(customerAuthMiddleware)
+		customerHandler.GET("/:id", func(c echo.Context) error {
+			return customerController.GetCustomer(c)
+		})
 
-	customerHandler := e.Group("/customer")
-	customerHandler.Use(customerAuthMiddleware)
-	customerHandler.GET("/:id", func(c echo.Context) error {
-		return customerController.GetCustomer(c)
-	})
-	customerHandler.GET("/:id/instagram", func(c echo.Context) error {
-		return c.String(http.StatusOK, c.Param("id"))
-	})
-	customerHandler.POST("/:id/facebook_token", func(c echo.Context) error {
-		return c.String(http.StatusOK, c.Param("id"))
-	})
+		customerHandler.GET("/:id/instagram", func(c echo.Context) error {
+			return c.String(http.StatusOK, c.Param("id"))
+		})
+		customerHandler.POST("/:id/facebook_token", func(c echo.Context) error {
+			return c.String(http.StatusOK, c.Param("id"))
+		})
 
-	adminHandler := e.Group("/admin")
-	adminHandler.Use(adminAuthMiddleware)
-	adminHandler.GET("/:id", func(c echo.Context) error {
-		return c.JSON(http.StatusNotImplemented, nil)
-	})
-	adminHandler.POST("/register/customer", adminController.RegisterCustomer)
+		adminHandler := e.Group("/admin")
+		adminHandler.Use(adminAuthMiddleware)
+		adminHandler.GET("/:id", func(c echo.Context) error {
+			return c.JSON(http.StatusNotImplemented, nil)
+		})
+		adminHandler.POST("/register/customer", adminController.RegisterCustomer)
 
-	batchHandler := e.Group("/batch")
-	batchHandler.Use(badgeAuthMiddleware)
-	batchHandler.GET("/execute", batchController.Execute)
+		batchHandler := e.Group("/batch")
+		batchHandler.Use(badgeAuthMiddleware)
+		batchHandler.GET("/execute", batchController.Execute)
+	}
+
+	docs.SwaggerInfo.Title = "Popple API"
+	docs.SwaggerInfo.Description = "Popple is very very exciting api!!!"
+	docs.SwaggerInfo.Version = "0.1"
+	docs.SwaggerInfo.Host = "popple.com"
+	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
