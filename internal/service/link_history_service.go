@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/model"
 	"github.com/IkezawaYuki/popple/internal/repository"
 )
 
@@ -14,6 +15,20 @@ func NewLinkHistoryService(instaWordpressRepo *repository.InstagramWordpressRepo
 	return &LinkHistoryService{
 		instaWordpressRepo: instaWordpressRepo,
 	}
+}
+
+func (s *LinkHistoryService) IsLinked(ctx context.Context, link *domain.LinkHistory) (bool, error) {
+
+}
+
+func (s *LinkHistoryService) Create(ctx context.Context, link *domain.LinkHistory) error {
+	return s.instaWordpressRepo.Save(ctx, model.InstagramWordpressDto{
+		CustomerID:       "",
+		InstagramMediaID: "",
+		InstagramLink:    "",
+		WordpressMediaID: "",
+		WordpressLink:    "",
+	})
 }
 
 func (s *LinkHistoryService) GetLinkHistories(ctx context.Context) ([]domain.LinkHistory, error) {

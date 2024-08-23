@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/IkezawaYuki/popple/internal/usecase"
 	"github.com/labstack/echo/v4"
@@ -23,7 +23,7 @@ func NewCustomerController(customerUsecase *usecase.CustomerUsecase, presenter2 
 
 func (ctr *CustomerController) Login(c echo.Context) error {
 	slog.Info("Login is invoked")
-	var user domain.User
+	var user entity.User
 	if err := c.Bind(&user); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -40,10 +40,10 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
 
-func (ctr *CustomerController) FetchInstagramMediaFromGraphAPI(c echo.Context) error {
-	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
-	customerID := c.Get("customer_id").(string)
-	ctx := c.Request().Context()
-	err := ctr.customerUsecase.FetchInstagramMediaFromGraphAPI(ctx, customerID)
-	return c.JSON(ctr.presenter.Generate(err, nil))
-}
+//func (ctr *CustomerController) FetchInstagramMediaFromGraphAPI(c echo.Context) error {
+//	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
+//	customerID := c.Get("customer_id").(string)
+//	ctx := c.Request().Context()
+//	err := ctr.customerUsecase.FetchInstagramMediaFromGraphAPI(ctx, customerID)
+//	return c.JSON(ctr.presenter.Generate(err, nil))
+//}

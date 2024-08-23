@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
+	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"github.com/IkezawaYuki/popple/internal/repository"
 	"github.com/IkezawaYuki/popple/internal/service"
 )
@@ -31,14 +33,14 @@ func NewAdminUsecase(
 	}
 }
 
-func (a *AdminUsecase) RegisterCustomer(ctx context.Context, customer *domain.Customer) error {
+func (a *AdminUsecase) RegisterCustomer(ctx context.Context, customer *entity.Customer) error {
 	return a.customerService.CreateCustomer(ctx, customer)
 }
 
-func (a *AdminUsecase) Login(ctx context.Context, user *domain.User) (string, error) {
+func (a *AdminUsecase) Login(ctx context.Context, user *entity.User) (string, error) {
 	customer, err := a.adminService.FindByEmail(ctx, user.Email)
 	if err != nil {
-		return "", domain.ErrNotFound
+		return "", objects.ErrNotFound
 	}
 	if err := a.authService.CheckPassword(user, customer.Password); err != nil {
 		return "", err
@@ -46,11 +48,11 @@ func (a *AdminUsecase) Login(ctx context.Context, user *domain.User) (string, er
 	return a.authService.GenerateJWTAdmin(customer)
 }
 
-func (a *AdminUsecase) GetCustomers(ctx context.Context) ([]domain.Customer, error) {
+func (a *AdminUsecase) GetCustomers(ctx context.Context) ([]entity.Customer, error) {
 	return a.customerService.FindAll(ctx)
 }
 
-func (a *AdminUsecase) GetAdmins(ctx context.Context) ([]domain.Admin, error) {
+func (a *AdminUsecase) GetAdmins(ctx context.Context) ([]entity.Admin, error) {
 	return a.adminService.FindAll(ctx)
 }
 

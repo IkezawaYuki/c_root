@@ -1,11 +1,11 @@
-package domain
+package entity
 
 import (
 	"fmt"
 	"strings"
 )
 
-type WordpressPosts struct {
+type WordpressPost struct {
 	Title         string `json:"title"`
 	Content       string `json:"content"`
 	Status        string `json:"status"`
@@ -18,8 +18,8 @@ type WordpressMedia struct {
 	MediaType string `json:"media_type"`
 }
 
-func NewWordpressPosts(instaDetail *InstagramMediaDetail, wpMedia []*WordpressMedia) WordpressPosts {
-	wordpressPosts := WordpressPosts{}
+func NewWordpressPosts(instaDetail *InstagramPost, wpMedia []*WordpressMedia) WordpressPost {
+	wordpressPosts := WordpressPost{}
 	wordpressPosts.Title = instaDetail.Title()
 	wordpressPosts.FeaturedMedia = wpMedia[0].ID
 	if instaDetail.MediaType == "IMAGE" {
@@ -33,7 +33,7 @@ func NewWordpressPosts(instaDetail *InstagramMediaDetail, wpMedia []*WordpressMe
 	return wordpressPosts
 }
 
-func getCarousel(instaDetail *InstagramMediaDetail, wpMedia []*WordpressMedia) string {
+func getCarousel(instaDetail *InstagramPost, wpMedia []*WordpressMedia) string {
 	sb := strings.Builder{}
 	sb.WriteString("<div class='a-root-wordpress-instagram-slider'>")
 	for _, media := range wpMedia {

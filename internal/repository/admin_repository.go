@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/model"
 	"gorm.io/gorm"
 )
 
@@ -14,20 +14,20 @@ func NewAdminRepository(db *gorm.DB) *AdminRepository {
 	return &AdminRepository{db: db}
 }
 
-func (a *AdminRepository) FindAll(ctx context.Context) ([]domain.AdminDto, error) {
-	var admins []domain.AdminDto
+func (a *AdminRepository) FindAll(ctx context.Context) ([]model.Admin, error) {
+	var admins []model.Admin
 	err := a.db.WithContext(ctx).Find(&admins).Error
 	return admins, err
 }
 
-func (a *AdminRepository) FindById(ctx context.Context, id uint64) (*domain.AdminDto, error) {
-	var admin domain.AdminDto
+func (a *AdminRepository) FindById(ctx context.Context, id uint64) (*model.Admin, error) {
+	var admin model.Admin
 	err := a.db.WithContext(ctx).First(&admin, id).Error
 	return &admin, err
 }
 
-func (a *AdminRepository) FindByEmail(ctx context.Context, email string) (*domain.AdminDto, error) {
-	var admin domain.AdminDto
+func (a *AdminRepository) FindByEmail(ctx context.Context, email string) (*model.Admin, error) {
+	var admin model.Admin
 	err := a.db.WithContext(ctx).First(&admin, "email = ?", email).Error
 	return &admin, err
 }

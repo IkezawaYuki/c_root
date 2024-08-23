@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/IkezawaYuki/popple/internal/usecase"
 	"github.com/labstack/echo/v4"
@@ -21,7 +21,7 @@ func NewAdminController(adminUsecase *usecase.AdminUsecase, presenter2 *presente
 }
 
 func (a *AdminController) RegisterCustomer(c echo.Context) error {
-	var customer domain.Customer
+	var customer entity.Customer
 	if err := c.Bind(&customer); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -30,7 +30,7 @@ func (a *AdminController) RegisterCustomer(c echo.Context) error {
 }
 
 func (a *AdminController) Login(c echo.Context) error {
-	var user domain.User
+	var user entity.User
 	if err := c.Bind(&user); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}

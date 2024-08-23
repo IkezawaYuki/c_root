@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/IkezawaYuki/popple/config"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
 )
 
@@ -25,8 +25,8 @@ type CreatePostResponse struct {
 	Link string `json:"link"`
 }
 
-func (w *WordpressRestAPI) CreatePosts(ctx context.Context, wordpressURL string, instaDetail *domain.InstagramMediaDetail, wpMedia []*domain.WordpressMedia) (string, error) {
-	posts := domain.NewWordpressPosts(instaDetail, wpMedia)
+func (w *WordpressRestAPI) CreatePosts(ctx context.Context, wordpressURL string, instaDetail *entity.InstagramPost, wpMedia []*entity.WordpressMedia) (string, error) {
+	posts := entity.NewWordpressPosts(instaDetail, wpMedia)
 	resp, err := w.httpClient.PostRequest(ctx, wordpressURL+wpPostUrl, posts, BasicAuthHeader())
 	if err != nil {
 		return "", err
@@ -38,8 +38,8 @@ func (w *WordpressRestAPI) CreatePosts(ctx context.Context, wordpressURL string,
 	return response.Link, nil
 }
 
-func (w *WordpressRestAPI) UploadFiles(ctx context.Context, wordpressURL string, pathList []string) ([]*domain.WordpressMedia, error) {
-	var wordpressMediaList []*domain.WordpressMedia
+func (w *WordpressRestAPI) UploadFiles(ctx context.Context, wordpressURL string, pathList []string) ([]*entity.WordpressMedia, error) {
+	var wordpressMediaList []*entity.WordpressMedia
 	for _, path := range pathList {
 		wordpressMedia, err := w.UploadFile(ctx, wordpressURL, path)
 		if err != nil {
@@ -52,12 +52,12 @@ func (w *WordpressRestAPI) UploadFiles(ctx context.Context, wordpressURL string,
 
 const wpMediaUrl = "/wp-json/wp/v2/media"
 
-func (w *WordpressRestAPI) UploadFile(ctx context.Context, wordpressURL string, path string) (*domain.WordpressMedia, error) {
+func (w *WordpressRestAPI) UploadFile(ctx context.Context, wordpressURL string, path string) (*entity.WordpressMedia, error) {
 	resp, err := w.httpClient.UploadFile(ctx, wordpressURL+wpMediaUrl, path, BasicAuthHeader())
 	if err != nil {
 		return nil, err
 	}
-	var wordpressMedia domain.WordpressMedia
+	var wordpressMedia entity.WordpressMedia
 	if err := json.Unmarshal(resp, &wordpressMedia); err != nil {
 		return nil, err
 	}

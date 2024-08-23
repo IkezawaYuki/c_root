@@ -3,7 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/model"
+	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"gorm.io/gorm"
 )
 
@@ -15,27 +16,19 @@ func NewInstagramRepository(db *gorm.DB) *InstagramRepository {
 	return &InstagramRepository{db: db}
 }
 
-func (i *InstagramRepository) FindByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramPostDto, error) {
-	var dto []domain.InstagramPostDto
+func (i *InstagramRepository) FindByCustomerUUID(ctx context.Context, customerID string) ([]model.InstagramPostDto, error) {
+	var dto []model.InstagramPostDto
 	err := i.db.WithContext(ctx).
 		Preload("InstagramPostMediaDto").
 		Find(&dto, "customer_id = ?", customerID).Error
 	return dto, err
 }
 
-func (i *InstagramRepository) FindNotYetByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramPostDto, error) {
-	var dto []domain.InstagramPostDto
-	err := i.db.WithContext(ctx).
-		Preload("InstagramPostMediaDto").
-		Find(&dto, "customer_id = ? and post_status = 0", customerID).Error
-	return dto, err
-}
-
-func (i *InstagramRepository) Save(ctx context.Context, dto domain.InstagramPostDto) error {
+func (i *InstagramRepository) Save(ctx context.Context, dto model.InstagramPostDto) error {
 	err := i.db.WithContext(ctx).Save(dto).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return domain.ErrDuplicateKey
+			return objects.ErrDuplicateKey
 		}
 		return err
 	}

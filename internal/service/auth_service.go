@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/IkezawaYuki/popple/config"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
+	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"github.com/IkezawaYuki/popple/internal/repository"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -36,14 +37,14 @@ func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
 	})
 	if err != nil {
 		slog.Info(err.Error())
-		return "", domain.ErrAuthorization
+		return "", objects.ErrAuthorization
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", domain.ErrAuthorization
+		return "", objects.ErrAuthorization
 	}
 	if !claims.VerifyAudience("customer", true) {
-		return "", domain.ErrAuthentication
+		return "", objects.ErrAuthentication
 	}
 	return claims["sub"].(string), nil
 }
@@ -59,23 +60,23 @@ func (a *AuthService) IsAdminLogin(tokenString string) (string, error) {
 	})
 	if err != nil {
 		slog.Info(err.Error())
-		return "", domain.ErrAuthorization
+		return "", objects.ErrAuthorization
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", domain.ErrAuthorization
+		return "", objects.ErrAuthorization
 	}
 	if !claims.VerifyAudience("admin", true) {
-		return "", domain.ErrAuthentication
+		return "", objects.ErrAuthentication
 	}
 	return claims["sub"].(string), nil
 }
 
-func (a *AuthService) GenerateJWTCustomer(c *domain.Customer) (string, error) {
+func (a *AuthService) GenerateJWTCustomer(c *entity.Customer) (string, error) {
 	claims := jwt.MapClaims{
 		"iss":   "popple",
 		"aud":   "customer",
-		"sub":   c.UUID,
+		"sub":   c.ID,
 		"email": c.Email,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
@@ -83,7 +84,7 @@ func (a *AuthService) GenerateJWTCustomer(c *domain.Customer) (string, error) {
 	return token.SignedString([]byte(config.Env.AccessSecretKey))
 }
 
-func (a *AuthService) GenerateJWTAdmin(admin *domain.Admin) (string, error) {
+func (a *AuthService) GenerateJWTAdmin(admin *entity.Admin) (string, error) {
 	claims := jwt.MapClaims{
 		"iss":   "popple",
 		"aud":   "admin",
@@ -95,9 +96,9 @@ func (a *AuthService) GenerateJWTAdmin(admin *domain.Admin) (string, error) {
 	return token.SignedString([]byte(config.Env.AccessSecretKey))
 }
 
-func (a *AuthService) CheckPassword(user *domain.User, password string) error {
+func (a *AuthService) CheckPassword(user *entity.User, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(user.Password)); err != nil {
-		return fmt.Errorf("password is incorrect: %s, %v", err.Error(), domain.ErrAuthorization)
+		return fmt.Errorf("password is incorrect: %s, %v", err.Error(), objects.ErrAuthorization)
 	}
 	return nil
 }
@@ -114,37 +115,59 @@ func NewAdminService(customerRepo *repository.CustomerRepository, adminRepo *rep
 	}
 }
 
-func (a *AdminService) GetCustomerByID(ctx context.Context, id string) (*domain.Customer, error) {
-	return a.customerRepository.FindByID(ctx, id)
-}
-
-func (a *AdminService) FindAll(ctx context.Context) ([]domain.Admin, error) {
-	dtoList, err := a.adminRepository.FindAll(ctx)
+func (a *AdminService) GetCustomerByID(ctx context.Context, id string) (*entity.Customer, error) {
+	customerModel, err := a.customerRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	admins := make([]domain.Admin, len(dtoList))
-	for i, dto := range dtoList {
-		admins[i] = domain.Admin{
-			ID:    dto.ID,
-			UUID:  dto.UUID,
-			Name:  dto.Name,
-			Email: dto.Email,
+	var customer entity.Customer
+	customer.ID = customerModel.ID
+	customer.Name = customerModel.Name
+	customer.Password = customerModel.Password
+	customer.Email = customerModel.Email
+	customer.WordpressURL = customerModel.WordpressURL
+	if customerModel.FacebookToken.Valid {
+		customer.FacebookToken = &customerModel.FacebookToken.String
+	}
+	if customerModel.StartDate.Valid {
+		customer.StartDate = &customerModel.StartDate.Time
+	}
+	if customerModel.InstagramID.Valid {
+		customer.InstagramID = &customerModel.InstagramID.String
+	}
+	if customerModel.InstagramName.Valid {
+		customer.InstagramName = &customerModel.InstagramName.String
+	}
+	customer.DeleteHashFlag = customerModel.DeleteHashFlag
+	return &customer, nil
+}
+
+func (a *AdminService) FindAll(ctx context.Context) ([]entity.Admin, error) {
+	modelList, err := a.adminRepository.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	admins := make([]entity.Admin, len(modelList))
+	for i, m := range modelList {
+		admins[i] = entity.Admin{
+			ID:       m.ID,
+			Name:     m.Name,
+			Password: m.Password,
+			Email:    m.Email,
 		}
 	}
 	return admins, nil
 }
 
-func (a *AdminService) FindByEmail(ctx context.Context, email string) (*domain.Admin, error) {
-	dto, err := a.adminRepository.FindByEmail(ctx, email)
+func (a *AdminService) FindByEmail(ctx context.Context, email string) (*entity.Admin, error) {
+	m, err := a.adminRepository.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
-	return &domain.Admin{
-		ID:       dto.ID,
-		UUID:     dto.UUID,
-		Name:     dto.Name,
-		Password: dto.Password,
-		Email:    dto.Email,
+	return &entity.Admin{
+		ID:       m.ID,
+		Name:     m.Name,
+		Password: m.Password,
+		Email:    m.Email,
 	}, nil
 }

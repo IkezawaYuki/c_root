@@ -44,7 +44,7 @@ func (b *BatchUsecase) Execute(ctx context.Context) error {
 			}
 
 			// Post to WordPress
-			if err := b.customerUsecase.PostToWordpress(ctx, customerUUID); err != nil {
+			if err := b.customerUsecase.PostToWordpressNotYet(ctx, customerUUID); err != nil {
 				return
 			}
 		}(customer.UUID)

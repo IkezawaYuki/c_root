@@ -2,38 +2,38 @@ package repository
 
 import (
 	"context"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/model"
 	"gorm.io/gorm"
 )
 
-type InstagramWordpressRepository struct {
+type PostRepository struct {
 	db *gorm.DB
 }
 
-func NewInstagramWordpressRepository(db *gorm.DB) *InstagramWordpressRepository {
-	return &InstagramWordpressRepository{
+func NewInstagramWordpressRepository(db *gorm.DB) *PostRepository {
+	return &PostRepository{
 		db: db,
 	}
 }
 
-func (i *InstagramWordpressRepository) Save(ctx context.Context, dto domain.InstagramWordpressDto) error {
-	return i.db.WithContext(ctx).Save(dto).Error
+func (p *PostRepository) Save(ctx context.Context, post *model.Post) error {
+	return p.db.WithContext(ctx).Save(post).Error
 }
 
-func (i *InstagramWordpressRepository) FindAll(ctx context.Context) ([]domain.InstagramWordpressDto, error) {
-	var dtoList []domain.InstagramWordpressDto
-	err := i.db.WithContext(ctx).Find(&dtoList).Order("customer_id").Error
-	return dtoList, err
+func (p *PostRepository) FindAll(ctx context.Context) ([]model.Post, error) {
+	var posts []model.Post
+	err := p.db.WithContext(ctx).Find(&posts).Order("customer_id").Error
+	return posts, err
 }
 
-func (i *InstagramWordpressRepository) FindByCustomerID(ctx context.Context, customerUUID string) ([]domain.InstagramWordpressDto, error) {
-	var dtoList []domain.InstagramWordpressDto
-	err := i.db.WithContext(ctx).Find(&dtoList, "customer_id = ?", customerUUID).Error
-	return dtoList, err
+func (p *PostRepository) FindByCustomerID(ctx context.Context, customerUUID string) ([]model.Post, error) {
+	var posts []model.Post
+	err := p.db.WithContext(ctx).Find(&posts, "customer_id = ?", customerUUID).Error
+	return posts, err
 }
 
-func (i *InstagramWordpressRepository) FindByUUID(ctx context.Context, uuid string) (domain.InstagramWordpressDto, error) {
-	var dto domain.InstagramWordpressDto
-	err := i.db.WithContext(ctx).Where("uuid = ?", uuid).First(&dto).Error
-	return dto, err
+func (p *PostRepository) FindByUUID(ctx context.Context, uuid string) (*model.Post, error) {
+	var post model.Post
+	err := p.db.WithContext(ctx).Where("uuid = ?", uuid).First(&post).Error
+	return &post, err
 }

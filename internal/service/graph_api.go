@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IkezawaYuki/popple/config"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
+	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
+	"time"
 )
 
 type GraphAPI struct {
@@ -21,46 +23,20 @@ func NewGraph(httpClient *infrastructure.HttpClient) *GraphAPI {
 	}
 }
 
-const getMediaChildURL = "/%s?fields=media_url,media_type"
-
-func (i *GraphAPI) getMediaChild(ctx context.Context, facebookToken string, mediaID string) (*domain.InstagramMediaContent, error) {
-	resp, err := i.httpClient.GetRequest(ctx, i.baseURL+fmt.Sprintf(getMediaChildURL, mediaID), fmt.Sprintf("Bearer %s", facebookToken))
-	if err != nil {
-		return nil, err
-	}
-	var content domain.InstagramMediaContent
-	if err := json.Unmarshal(resp, &content); err != nil {
-		return nil, err
-	}
-	return &content, nil
-}
-
-func (i *GraphAPI) FetchMedias(ctx context.Context, facebookToken string, detail *domain.InstagramMediaDetail) ([]domain.Media, error) {
-	if detail.MediaType == "CAROUSEL_ALBUM" {
-		medias := make([]domain.Media, len(detail.Children))
-		for _, child := range detail.Children {
-			cMedia, err := i.getMediaChild(ctx, facebookToken, child)
-			if err != nil {
-				return nil, err
-			}
-			medias = append(medias, domain.Media{
-				ID:   cMedia.ID,
-				Url:  cMedia.MediaURL,
-				Type: cMedia.MediaType,
-			})
-		}
-		return medias, nil
-	}
-	medias := make([]domain.Media, 1)
-	medias[0] = domain.Media{
-		ID:   detail.ID,
-		Url:  detail.MediaURL,
-		Type: detail.MediaType,
-	}
-	return medias, nil
-}
-
 const getInstagramBusinessAccountURL = "/me?fields=id,name,accounts{instagram_business_account}"
+
+type GraphApiMeResponse struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Accounts struct {
+		Data []struct {
+			InstagramBusinessAccount struct {
+				ID string `json:"id"`
+			} `json:"instagram_business_account"`
+			ID string `json:"id"`
+		} `json:"data"`
+	} `json:"accounts"`
+}
 
 func (i *GraphAPI) GetInstagramBusinessAccountID(ctx context.Context, facebookToken string) (string, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
@@ -69,43 +45,118 @@ func (i *GraphAPI) GetInstagramBusinessAccountID(ctx context.Context, facebookTo
 	if err != nil {
 		return "", err
 	}
-	var instagram domain.GraphApiMeResponse
+	var instagram GraphApiMeResponse
 	err = json.Unmarshal(resp, &instagram)
 	if err != nil {
 		return "", err
 	}
-	return instagram.InstagramBusinessAccountID(), nil
+	if len(instagram.Accounts.Data) == 0 {
+		return "", objects.ErrNotFound
+	}
+	return instagram.Accounts.Data[0].InstagramBusinessAccount.ID, nil
 }
 
 const getMediaList = "/%s"
 
-func (i *GraphAPI) GetMediaList(ctx context.Context, facebookToken, instagramID string) ([]string, error) {
+type InstagramMediaList struct {
+	Media struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	} `json:"media"`
+	ID string `json:"id"`
+}
+
+func (i *GraphAPI) GetMediaIDList(ctx context.Context, facebookToken, instagramID string) ([]string, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
 		i.baseURL+fmt.Sprintf(getMediaList, instagramID),
 		fmt.Sprintf("Bearer %s", facebookToken))
 	if err != nil {
 		return nil, err
 	}
-	var detail domain.InstagramMediaList
-	if err := json.Unmarshal(resp, &detail); err != nil {
+	var mediaList InstagramMediaList
+	if err := json.Unmarshal(resp, &mediaList); err != nil {
 		return nil, err
 	}
-	return detail.ConvertToInstagramMediaList(), nil
+	mediaIdList := make([]string, len(mediaList.Media.Data))
+	for idx, media := range mediaList.Media.Data {
+		mediaIdList[idx] = media.ID
+	}
+	return mediaIdList, nil
 }
 
-const getMediaContent = "/%s?fields=media_type,media_url,id,caption,timestamp,permalink,children"
+const getMediaDetail = "/%s?fields=media_type,media_url,id,caption,timestamp,permalink,children"
 
-func (i *GraphAPI) GetMediaDetail(ctx context.Context, facebookToken string, mediaID string) (*domain.InstagramMediaDetail, error) {
+type InstagramMediaDetail struct {
+	ID        string   `json:"id"`
+	Caption   string   `json:"caption"`
+	MediaType string   `json:"media_type"`
+	MediaURL  string   `json:"media_url"`
+	Timestamp string   `json:"timestamp"`
+	Permalink string   `json:"permalink"`
+	Children  []string `json:"children"`
+}
+
+func (i *GraphAPI) GetMediaDetail(ctx context.Context, facebookToken string, mediaID string) (*entity.InstagramPost, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
-		i.baseURL+fmt.Sprintf(getMediaContent, mediaID),
+		i.baseURL+fmt.Sprintf(getMediaDetail, mediaID),
 		fmt.Sprintf("Bearer %s", facebookToken),
 	)
 	if err != nil {
 		return nil, err
 	}
-	var detail domain.InstagramMediaDetail
+	var detail InstagramMediaDetail
 	if err := json.Unmarshal(resp, &detail); err != nil {
 		return nil, err
 	}
-	return &detail, nil
+	var post entity.InstagramPost
+	post.ID = detail.ID
+	post.Caption = detail.Caption
+	post.MediaType = detail.MediaType
+	post.MediaURL = detail.MediaURL
+	timestamp, err := time.Parse("2006-01-02T15:04:05-0700", detail.Timestamp)
+	if err != nil {
+		return nil, err
+	}
+	post.Timestamp = timestamp
+
+	if len(detail.Children) > 0 {
+		children := make([]string, len(detail.Children))
+		copy(children, detail.Children)
+		post.ChildrenID = children
+	}
+
+	return &post, nil
+}
+
+const getMediaChildURL = "/%s?fields=media_url,media_type"
+
+type InstagramMediaChild struct {
+	ID        string `json:"id"`
+	MediaType string `json:"media_type"`
+	MediaURL  string `json:"media_url"`
+}
+
+func (i *GraphAPI) GetMediaChild(ctx context.Context, facebookToken string, post *entity.InstagramPost) error {
+	if len(post.ChildrenID) == 0 {
+		return nil
+	}
+	contents := make([]entity.ChildMedia, len(post.ChildrenID))
+	for idx, childID := range post.ChildrenID {
+		resp, err := i.httpClient.GetRequest(ctx, i.baseURL+fmt.Sprintf(getMediaChildURL, childID), fmt.Sprintf("Bearer %s", facebookToken))
+		if err != nil {
+			return err
+		}
+		var content InstagramMediaChild
+		if err := json.Unmarshal(resp, &content); err != nil {
+			return err
+		}
+		contents[idx] = entity.ChildMedia{
+			ID:        content.ID,
+			MediaURL:  content.MediaURL,
+			MediaType: content.MediaType,
+		}
+	}
+	post.ChildrenContent = contents
+	return nil
 }

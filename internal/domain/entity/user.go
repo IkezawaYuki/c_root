@@ -1,6 +1,6 @@
-package domain
+package entity
 
 type User struct {
-	Email    string `json:"email"`
+	Email    string `json:"string"`
 	Password string `json:"password"`
 }
