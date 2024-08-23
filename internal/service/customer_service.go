@@ -112,7 +112,7 @@ func (s *CustomerService) GetInstagramPost(ctx context.Context, customerID strin
 	return posts, nil
 }
 
-func (s *CustomerService) SaveInstagramPost(ctx context.Context, instagramPost *domain.InstagramMediaDetail, startDate *time.Time) error {
+func (s *CustomerService) SaveInstagramPost(ctx context.Context, instagramPost *domain.InstagramMediaDetail, instagramPostMedia []domain.Media, startDate *time.Time) error {
 	timestamp, err := time.Parse("2006-01-02T15:04:05-0700", instagramPost.Timestamp)
 	if err != nil {
 		return err
@@ -124,14 +124,24 @@ func (s *CustomerService) SaveInstagramPost(ctx context.Context, instagramPost *
 	if startDate.Before(timestamp) {
 		status = domain.Linked
 	}
-	err = s.instagramRepository.Save(ctx, domain.InstagramDto{
-		UUID:       uuid.NewString(),
-		Caption:    instagramPost.Caption,
-		MediaType:  instagramPost.MediaType,
-		MediaURL:   instagramPost.MediaURL,
-		Permalink:  instagramPost.Permalink,
-		PostStatus: int(status),
-		Timestamp:  timestamp,
+	mediaDto := make([]domain.InstagramPostMediaDto, len(instagramPostMedia))
+	for i, media := range instagramPostMedia {
+		mediaDto[i] = domain.InstagramPostMediaDto{
+			UUID:      uuid.NewString(),
+			MediaID:   media.ID,
+			MediaURL:  media.Url,
+			MediaType: media.Type,
+		}
+	}
+	err = s.instagramRepository.Save(ctx, domain.InstagramPostDto{
+		UUID:                  uuid.NewString(),
+		Caption:               instagramPost.Caption,
+		MediaType:             instagramPost.MediaType,
+		MediaURL:              instagramPost.MediaURL,
+		Permalink:             instagramPost.Permalink,
+		PostStatus:            int(status),
+		Timestamp:             timestamp,
+		InstagramPostMediaDto: mediaDto,
 	})
 	if err != nil {
 		if errors.Is(err, domain.ErrDuplicateKey) {

@@ -33,7 +33,7 @@ func main() {
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		return c.String(http.StatusOK, "ok")
 	})
 	e.Group("/api/v1")
 	{
@@ -69,7 +69,7 @@ func main() {
 	docs.SwaggerInfo.Description = "Popple is very very exciting api!!!"
 	docs.SwaggerInfo.Version = "0.1"
 	docs.SwaggerInfo.Host = "popple.com"
-	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

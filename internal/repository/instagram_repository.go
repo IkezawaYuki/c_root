@@ -15,19 +15,23 @@ func NewInstagramRepository(db *gorm.DB) *InstagramRepository {
 	return &InstagramRepository{db: db}
 }
 
-func (i *InstagramRepository) FindByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
-	var dto []domain.InstagramDto
-	err := i.db.WithContext(ctx).Find(&dto, "customer_id = ?", customerID).Error
+func (i *InstagramRepository) FindByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramPostDto, error) {
+	var dto []domain.InstagramPostDto
+	err := i.db.WithContext(ctx).
+		Preload("InstagramPostMediaDto").
+		Find(&dto, "customer_id = ?", customerID).Error
 	return dto, err
 }
 
-func (i *InstagramRepository) FindNotYetByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramDto, error) {
-	var dto []domain.InstagramDto
-	err := i.db.WithContext(ctx).Find(&dto, "customer_id = ? and post_status = 0", customerID).Error
+func (i *InstagramRepository) FindNotYetByCustomerUUID(ctx context.Context, customerID string) ([]domain.InstagramPostDto, error) {
+	var dto []domain.InstagramPostDto
+	err := i.db.WithContext(ctx).
+		Preload("InstagramPostMediaDto").
+		Find(&dto, "customer_id = ? and post_status = 0", customerID).Error
 	return dto, err
 }
 
-func (i *InstagramRepository) Save(ctx context.Context, dto domain.InstagramDto) error {
+func (i *InstagramRepository) Save(ctx context.Context, dto domain.InstagramPostDto) error {
 	err := i.db.WithContext(ctx).Save(dto).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {

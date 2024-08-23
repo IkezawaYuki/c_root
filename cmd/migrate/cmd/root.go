@@ -25,8 +25,18 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("migration is start...")
 		db := infrastructure.GetMysqlConnection()
 		if err := db.AutoMigrate(&domain.CustomerDto{}); err != nil {
+			fmt.Printf("AutoMigrate err: %v\n", err)
+		}
+		if err := db.AutoMigrate(&domain.InstagramPostDto{}); err != nil {
+			fmt.Printf("AutoMigrate err: %v\n", err)
+		}
+		if err := db.AutoMigrate(&domain.InstagramPostMediaDto{}); err != nil {
+			fmt.Printf("AutoMigrate err: %v\n", err)
+		}
+		if err := db.AutoMigrate(&domain.InstagramWordpressDto{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
 		fmt.Println("end")

@@ -60,25 +60,37 @@ func (AdminDto) TableName() string { return "admins" }
 type InstagramWordpressDto struct {
 	UUID             string
 	CustomerUUID     string
-	InstagramMediaID int
+	InstagramMediaID string
 	InstagramLink    string
-	WordpressMediaID int
+	WordpressMediaID string
 	WordpressLink    string
 	gorm.Model
 }
 
 func (InstagramWordpressDto) TableName() string { return "instagram_wordpress" }
 
-type InstagramDto struct {
-	UUID       string
-	MediaID    int
-	Caption    string
-	MediaType  string
-	MediaURL   string
-	Permalink  string
-	PostStatus int
-	Timestamp  time.Time
+type InstagramPostDto struct {
+	UUID                  string
+	MediaID               string
+	Caption               string
+	MediaType             string
+	MediaURL              string
+	Permalink             string
+	PostStatus            int
+	Timestamp             time.Time
+	InstagramPostMediaDto []InstagramPostMediaDto
 	gorm.Model
 }
 
-func (InstagramDto) TableName() string { return "instagram_posts" }
+func (InstagramPostDto) TableName() string { return "instagram_posts" }
+
+type InstagramPostMediaDto struct {
+	UUID               string
+	MediaID            string
+	MediaType          string
+	MediaURL           string
+	InstagramPostDtoID uint
+	gorm.Model
+}
+
+func (InstagramPostMediaDto) TableName() string { return "instagram_post_medias" }

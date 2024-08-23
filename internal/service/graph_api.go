@@ -44,16 +44,20 @@ func (i *GraphAPI) FetchMedias(ctx context.Context, facebookToken string, detail
 				return nil, err
 			}
 			medias = append(medias, domain.Media{
+				ID:   cMedia.ID,
 				Url:  cMedia.MediaURL,
 				Type: cMedia.MediaType,
 			})
 		}
 		return medias, nil
 	}
-
-	return []domain.Media{
-		{detail.MediaType, detail.MediaURL},
-	}, nil
+	medias := make([]domain.Media, 1)
+	medias[0] = domain.Media{
+		ID:   detail.ID,
+		Url:  detail.MediaURL,
+		Type: detail.MediaType,
+	}
+	return medias, nil
 }
 
 const getInstagramBusinessAccountURL = "/me?fields=id,name,accounts{instagram_business_account}"

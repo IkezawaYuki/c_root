@@ -44,6 +44,11 @@ to quickly create a Cobra application.`,
 		_, _ = fmt.Scan(&password)
 		customer.Password = password
 
+		fmt.Println("WordpressURLを入力してください")
+		var wordpressURL string
+		_, _ = fmt.Scan(&wordpressURL)
+		customer.WordpressURL = wordpressURL
+
 		err := srv.CreateCustomer(cmd.Context(), &customer)
 		if err != nil {
 			fmt.Println(err)

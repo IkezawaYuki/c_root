@@ -75,7 +75,11 @@ func (c *CustomerUsecase) FetchInstagramMediaFromGraphAPI(ctx context.Context, c
 		if err != nil {
 			return err
 		}
-		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, customer.StartDate); err != nil {
+		medias, err := c.graphApi.FetchMedias(ctx, *customer.FacebookToken, instaDetail)
+		if err != nil {
+			return err
+		}
+		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, medias, customer.StartDate); err != nil {
 			return err
 		}
 	}
@@ -99,7 +103,11 @@ func (c *CustomerUsecase) PostToWordpress(ctx context.Context, customerID string
 		if err != nil {
 			return err
 		}
-		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, customer.StartDate); err != nil {
+		medias, err := c.graphApi.FetchMedias(ctx, *customer.FacebookToken, instaDetail)
+		if err != nil {
+			return err
+		}
+		if err := c.customerService.SaveInstagramPost(ctx, instaDetail, medias, customer.StartDate); err != nil {
 			return err
 		}
 		targetFiles, err := c.graphApi.FetchMedias(ctx, *customer.FacebookToken, instaDetail)

@@ -28,6 +28,7 @@ func (r *GraphApiMeResponse) InstagramBusinessAccountID() string {
 }
 
 type Media struct {
+	ID   string
 	Url  string
 	Type string
 }
@@ -35,9 +36,9 @@ type Media struct {
 type LinkHistory struct {
 	ID               int       `json:"id"`
 	UUID             string    `json:"uuid"`
-	InstagramMediaID int       `json:"instagram_media_id"`
+	InstagramMediaID string    `json:"instagram_media_id"`
 	InstagramLink    string    `json:"instagram_link"`
-	WordpressMediaID int       `json:"wordpress_media_id"`
+	WordpressMediaID string    `json:"wordpress_media_id"`
 	WordpressLink    string    `json:"wordpress_link"`
 	CreateAt         time.Time `json:"create_at"`
 }
