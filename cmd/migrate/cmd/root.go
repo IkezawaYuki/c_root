@@ -27,16 +27,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("migration is start...")
 		db := infrastructure.GetMysqlConnection()
-		if err := db.AutoMigrate(&model.CustomerDto{}); err != nil {
+		if err := db.AutoMigrate(&model.Customer{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
-		if err := db.AutoMigrate(&model.InstagramPostDto{}); err != nil {
+		if err := db.AutoMigrate(&model.Post{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
-		if err := db.AutoMigrate(&model.InstagramPostMediaDto{}); err != nil {
-			fmt.Printf("AutoMigrate err: %v\n", err)
-		}
-		if err := db.AutoMigrate(&model.InstagramWordpressDto{}); err != nil {
+		if err := db.AutoMigrate(&model.Customer{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
 		fmt.Println("end")

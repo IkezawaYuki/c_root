@@ -115,13 +115,13 @@ func NewAdminService(customerRepo *repository.CustomerRepository, adminRepo *rep
 	}
 }
 
-func (a *AdminService) GetCustomerByID(ctx context.Context, id string) (*entity.Customer, error) {
+func (a *AdminService) GetCustomerByID(ctx context.Context, id int) (*entity.Customer, error) {
 	customerModel, err := a.customerRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	var customer entity.Customer
-	customer.ID = customerModel.ID
+	customer.ID = int(customerModel.ID)
 	customer.Name = customerModel.Name
 	customer.Password = customerModel.Password
 	customer.Email = customerModel.Email

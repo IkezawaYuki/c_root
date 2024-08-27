@@ -34,20 +34,16 @@ func (b *BatchUsecase) Execute(ctx context.Context) error {
 		sem <- struct{}{}
 
 		// Start a goroutine for each customer
-		go func(customerUUID string) {
+		go func(customerID int) {
 			defer wg.Done()
 			defer func() { <-sem }() // 処理が完了したらセマフォを解放
 
 			// Fetch Instagram Media
-			if err := b.customerUsecase.FetchInstagramMediaFromGraphAPI(ctx, customerUUID); err != nil {
+			if err := b.customerUsecase.FetchAndPost(ctx, customerID); err != nil {
 				return
 			}
 
-			// Post to WordPress
-			if err := b.customerUsecase.PostToWordpressNotYet(ctx, customerUUID); err != nil {
-				return
-			}
-		}(customer.UUID)
+		}(customer.ID)
 	}
 
 	// Wait for all goroutines to finish

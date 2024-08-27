@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"github.com/IkezawaYuki/popple/internal/domain"
+	"fmt"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
 	"io"
 	"net/http"
@@ -20,20 +21,28 @@ func NewFileService(httpClient *infrastructure.HttpClient) *FileService {
 	}
 }
 
-func (f *FileService) DownloadMedias(ctx context.Context, medias []domain.Media) ([]string, error) {
-	var result []string
-	for _, media := range medias {
-		path, err := f.DownloadMedia(ctx, media)
+func (f *FileService) DownloadMedias(ctx context.Context, post *entity.InstagramPost) ([]string, error) {
+	var fileList []string
+	if len(post.ChildrenContent) == 0 {
+		mediaPath, err := f.DownloadMedia(ctx, post.MediaURL)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, path)
+		fileList = append(fileList, mediaPath)
+	} else {
+		for _, child := range post.ChildrenContent {
+			mediaPath, err := f.DownloadMedia(ctx, child.MediaURL)
+			if err != nil {
+				return nil, err
+			}
+			fileList = append(fileList, mediaPath)
+		}
 	}
-	return result, nil
+	return fileList, nil
 }
 
-func (f *FileService) DownloadMedia(ctx context.Context, media domain.Media) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", media.Url, nil)
+func (f *FileService) DownloadMedia(ctx context.Context, mediaUrl string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", mediaUrl, nil)
 	if err != nil {
 		return "", err
 	}
@@ -42,7 +51,7 @@ func (f *FileService) DownloadMedia(ctx context.Context, media domain.Media) (st
 	if err != nil {
 		return "", err
 	}
-	filename := filepath.Base(media.Url)
+	filename := filepath.Base(mediaUrl)
 	filePath := filepath.Join(tempDirectory, filename)
 	out, err := os.Create(filePath)
 	if err != nil {
@@ -58,10 +67,10 @@ func (f *FileService) DownloadMedia(ctx context.Context, media domain.Media) (st
 	return filePath, nil
 }
 
-const tempDirectory = "./tmp"
+const tempDirectory = "./tmp_%d"
 
-func (f *FileService) MakeTempDirectory(customerID string) error {
-	err := os.Mkdir(tempDirectory+"_"+customerID, 0777)
+func (f *FileService) MakeTempDirectory(customerID int) error {
+	err := os.Mkdir(fmt.Sprintf(tempDirectory, customerID), 0777)
 	if err != nil {
 		if os.IsExist(err) {
 			return nil

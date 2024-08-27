@@ -6,7 +6,7 @@ import (
 )
 
 type Post struct {
-	CustomerID       string `gorm:"not null"`
+	CustomerID       int    `gorm:"not null"`
 	InstagramMediaID string `gorm:"not null"`
 	InstagramLink    string `gorm:"not null"`
 	WordpressMediaID sql.NullString

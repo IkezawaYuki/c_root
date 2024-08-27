@@ -67,7 +67,7 @@ type InstagramMediaList struct {
 	ID string `json:"id"`
 }
 
-func (i *GraphAPI) GetMediaIDList(ctx context.Context, facebookToken, instagramID string) ([]string, error) {
+func (i *GraphAPI) GetMediaIDList(ctx context.Context, facebookToken, instagramID *string) ([]string, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
 		i.baseURL+fmt.Sprintf(getMediaList, instagramID),
 		fmt.Sprintf("Bearer %s", facebookToken))
@@ -97,7 +97,7 @@ type InstagramMediaDetail struct {
 	Children  []string `json:"children"`
 }
 
-func (i *GraphAPI) GetMediaDetail(ctx context.Context, facebookToken string, mediaID string) (*entity.InstagramPost, error) {
+func (i *GraphAPI) GetMediaDetail(ctx context.Context, facebookToken *string, mediaID string) (*entity.InstagramPost, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
 		i.baseURL+fmt.Sprintf(getMediaDetail, mediaID),
 		fmt.Sprintf("Bearer %s", facebookToken),
@@ -137,7 +137,7 @@ type InstagramMediaChild struct {
 	MediaURL  string `json:"media_url"`
 }
 
-func (i *GraphAPI) GetMediaChild(ctx context.Context, facebookToken string, post *entity.InstagramPost) error {
+func (i *GraphAPI) GetMediaChild(ctx context.Context, facebookToken *string, post *entity.InstagramPost) error {
 	if len(post.ChildrenID) == 0 {
 		return nil
 	}

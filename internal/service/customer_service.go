@@ -12,20 +12,17 @@ import (
 )
 
 type CustomerService struct {
-	customerRepository           *repository.CustomerRepository
-	instagramRepository          *repository.InstagramRepository
-	instagramWordpressRepository *repository.InstagramWordpressRepository
+	customerRepository *repository.CustomerRepository
+	postRepository     *repository.PostRepository
 }
 
 func NewCustomerService(
 	customerRepo *repository.CustomerRepository,
-	instagramRepository *repository.InstagramRepository,
-	instagramWordpressRepository *repository.InstagramWordpressRepository,
+	postRepository *repository.PostRepository,
 ) *CustomerService {
 	return &CustomerService{
-		customerRepository:           customerRepo,
-		instagramRepository:          instagramRepository,
-		instagramWordpressRepository: instagramWordpressRepository,
+		customerRepository: customerRepo,
+		postRepository:     postRepository,
 	}
 }
 
@@ -36,28 +33,48 @@ func (s *CustomerService) FindAll(ctx context.Context) ([]entity.Customer, error
 	}
 	customers := make([]entity.Customer, len(postModelList))
 	for i, m := range postModelList {
-		customers[i] = entity.Customer{
-			ID:             m.ID,
-			Name:           m.Name,
-			Password:       "",
-			Email:          "",
-			WordpressURL:   "",
-			FacebookToken:  nil,
-			StartDate:      nil,
-			InstagramID:    nil,
-			InstagramName:  nil,
-			DeleteHashFlag: 0,
-		}
+		customer := convertCustomer(&m)
+		customers[i] = *customer
 	}
 	return customers, nil
 }
 
-func (s *CustomerService) GetCustomer(ctx context.Context, id string) (*entity.Customer, error) {
-	return s.customerRepository.FindByID(ctx, id)
+func (s *CustomerService) FindByID(ctx context.Context, id int) (*entity.Customer, error) {
+	m, err := s.customerRepository.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return convertCustomer(m), nil
 }
 
 func (s *CustomerService) GetCustomerByEmail(ctx context.Context, email string) (*entity.Customer, error) {
-	return s.customerRepository.FindByEmail(ctx, email)
+	m, err := s.customerRepository.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return convertCustomer(m), nil
+}
+
+func convertCustomer(m *model.Customer) *entity.Customer {
+	var customer entity.Customer
+
+	customer.ID = int(m.ID)
+	customer.Name = m.Name
+	customer.Password = m.Password
+	customer.Email = m.Email
+	customer.WordpressURL = m.WordpressURL
+
+	if m.FacebookToken.Valid {
+		customer.FacebookToken = &m.FacebookToken.String
+	}
+	if m.InstagramID.Valid {
+		customer.InstagramID = &m.InstagramID.String
+	}
+	if m.InstagramName.Valid {
+		customer.InstagramName = &m.InstagramName.String
+	}
+	customer.DeleteHashFlag = m.DeleteHashFlag
+	return &customer
 }
 
 func (s *CustomerService) CreateCustomer(ctx context.Context, customer *entity.Customer) error {

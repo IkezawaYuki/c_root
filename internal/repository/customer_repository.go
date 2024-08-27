@@ -22,7 +22,7 @@ func (c *CustomerRepository) FindAll(ctx context.Context) ([]model.Customer, err
 	return dto, err
 }
 
-func (c *CustomerRepository) FindByID(ctx context.Context, id string) (*model.Customer, error) {
+func (c *CustomerRepository) FindByID(ctx context.Context, id int) (*model.Customer, error) {
 	var customer model.Customer
 	result := c.db.WithContext(ctx).First(&customer, "id = ?", id)
 	if result.Error != nil {

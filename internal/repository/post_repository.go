@@ -10,7 +10,7 @@ type PostRepository struct {
 	db *gorm.DB
 }
 
-func NewInstagramWordpressRepository(db *gorm.DB) *PostRepository {
+func NewPostRepository(db *gorm.DB) *PostRepository {
 	return &PostRepository{
 		db: db,
 	}
@@ -32,8 +32,14 @@ func (p *PostRepository) FindByCustomerID(ctx context.Context, customerUUID stri
 	return posts, err
 }
 
-func (p *PostRepository) FindByUUID(ctx context.Context, uuid string) (*model.Post, error) {
+func (p *PostRepository) FindByID(ctx context.Context, id string) (*model.Post, error) {
 	var post model.Post
-	err := p.db.WithContext(ctx).Where("uuid = ?", uuid).First(&post).Error
+	err := p.db.WithContext(ctx).Where("id = ?", id).First(&post).Error
+	return &post, err
+}
+
+func (p *PostRepository) FindByInstagramMediaID(ctx context.Context, InstagramMediaID string) (*model.Post, error) {
+	var post model.Post
+	err := p.db.WithContext(ctx).First(&post, "instagram_id = ?", InstagramMediaID).Error
 	return &post, err
 }

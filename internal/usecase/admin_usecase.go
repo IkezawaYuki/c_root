@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"github.com/IkezawaYuki/popple/internal/domain"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"github.com/IkezawaYuki/popple/internal/repository"
@@ -10,11 +9,11 @@ import (
 )
 
 type AdminUsecase struct {
-	baseRepository     *repository.BaseRepository
-	adminService       *service.AdminService
-	authService        *service.AuthService
-	customerService    *service.CustomerService
-	linkHistoryService *service.LinkHistoryService
+	baseRepository  *repository.BaseRepository
+	adminService    *service.AdminService
+	authService     *service.AuthService
+	customerService *service.CustomerService
+	postService     *service.PostService
 }
 
 func NewAdminUsecase(
@@ -22,14 +21,14 @@ func NewAdminUsecase(
 	adminSrv *service.AdminService,
 	authSrv *service.AuthService,
 	customerSrv *service.CustomerService,
-	linkHistoryService *service.LinkHistoryService,
+	postService *service.PostService,
 ) *AdminUsecase {
 	return &AdminUsecase{
-		baseRepository:     baseRepo,
-		adminService:       adminSrv,
-		authService:        authSrv,
-		customerService:    customerSrv,
-		linkHistoryService: linkHistoryService,
+		baseRepository:  baseRepo,
+		adminService:    adminSrv,
+		authService:     authSrv,
+		customerService: customerSrv,
+		postService:     postService,
 	}
 }
 
@@ -54,16 +53,4 @@ func (a *AdminUsecase) GetCustomers(ctx context.Context) ([]entity.Customer, err
 
 func (a *AdminUsecase) GetAdmins(ctx context.Context) ([]entity.Admin, error) {
 	return a.adminService.FindAll(ctx)
-}
-
-func (a *AdminUsecase) GetLinkHistories(ctx context.Context) ([]domain.LinkHistory, error) {
-	return a.linkHistoryService.GetLinkHistories(ctx)
-}
-
-func (a *AdminUsecase) GetLinkHistoriesByCustomer(ctx context.Context, customerUUID string) ([]domain.LinkHistory, error) {
-	return a.linkHistoryService.GetLinkHistoriesByCustomer(ctx, customerUUID)
-}
-
-func (a *AdminUsecase) GetLinkHistoryByUUID(ctx context.Context, uuid string) (*domain.LinkHistory, error) {
-	return a.linkHistoryService.GetLinkHistoryByUUID(ctx, uuid)
 }

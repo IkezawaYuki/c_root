@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 type CustomerController struct {
@@ -34,7 +35,11 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 
 func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	slog.Info("GetCustomer is invoked")
-	customerId := c.Param("id")
+	customerIdParam := c.Param("id")
+	customerId, err := strconv.Atoi(customerIdParam)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 	ctx := c.Request().Context()
 	customer, err := ctr.customerUsecase.GetCustomer(ctx, customerId)
 	return c.JSON(ctr.presenter.Generate(err, customer))
