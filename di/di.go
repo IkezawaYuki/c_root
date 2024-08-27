@@ -26,7 +26,6 @@ func NewCustomerService(db *gorm.DB) *service.CustomerService {
 func NewCustomerController(db *gorm.DB, redisCli *redis.Client) controller.CustomerController {
 	baseRepo := repository.NewBaseRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
-
 	postRepo := repository.NewPostRepository(db)
 	redisClient := repository.NewRedisClient(redisCli)
 	pre := presenter.NewPresenter()

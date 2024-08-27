@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/IkezawaYuki/popple/di"
+	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
 	"github.com/IkezawaYuki/popple/internal/service"
 	"os"
@@ -26,7 +27,7 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		var customer entityCustomer
+		var customer entity.Customer
 
 		fmt.Println("名前を入力してください：")
 		var name string
@@ -47,6 +48,11 @@ to quickly create a Cobra application.`,
 		var wordpressURL string
 		_, _ = fmt.Scan(&wordpressURL)
 		customer.WordpressURL = wordpressURL
+
+		fmt.Println("FacebookTokenを入力してください")
+		var facebookToken string
+		_, _ = fmt.Scan(&facebookToken)
+		customer.FacebookToken = &facebookToken
 
 		err := srv.CreateCustomer(cmd.Context(), &customer)
 		if err != nil {
