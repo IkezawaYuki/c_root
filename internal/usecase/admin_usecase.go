@@ -14,6 +14,7 @@ type AdminUsecase struct {
 	authService     *service.AuthService
 	customerService *service.CustomerService
 	postService     *service.PostService
+	customerUsecase *CustomerUsecase
 }
 
 func NewAdminUsecase(
@@ -21,14 +22,14 @@ func NewAdminUsecase(
 	adminSrv *service.AdminService,
 	authSrv *service.AuthService,
 	customerSrv *service.CustomerService,
-	postService *service.PostService,
+	customerUsecase *CustomerUsecase,
 ) *AdminUsecase {
 	return &AdminUsecase{
 		baseRepository:  baseRepo,
 		adminService:    adminSrv,
 		authService:     authSrv,
 		customerService: customerSrv,
-		postService:     postService,
+		customerUsecase: customerUsecase,
 	}
 }
 
