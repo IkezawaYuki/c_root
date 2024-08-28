@@ -33,6 +33,14 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 	return c.JSON(ctr.presenter.Generate(err, token))
 }
 
+// GetCustomer godoc
+//
+//	@Summary		顧客情報の取得
+//	@Description	顧客情報の取得
+//	@Accept			json
+//	@Produce		json
+//	@Security		Token
+//	@Router			/customer/{id} [post]
 func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	slog.Info("GetCustomer is invoked")
 	customerIdParam := c.Param("id")

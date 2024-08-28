@@ -1,4 +1,28 @@
+basePath: /v1
+host: localhost:1323
 info:
   contact: {}
-paths: {}
+  description: This is a recommend_swaggo server
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Recommend Swaggo API
+  version: "1.0"
+paths:
+  /customer/{id}:
+    post:
+      consumes:
+      - application/json
+      description: 顧客情報の取得
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 顧客情報の取得
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

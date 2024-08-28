@@ -11,12 +11,16 @@ import (
 	"net/http"
 )
 
-// @contact.name   API Support
-// @contact.url    http://www.swagger.io/support
-// @contact.email  support@swagger.io
-
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//	@title						Recommend Swaggo API
+//	@version					1.0
+//	@description				This is a recommend_swaggo server
+//	@license.name				Apache 2.0
+//	@license.url				http://www.apache.org/licenses/LICENSE-2.0.html
+//	@host						localhost:1323
+//	@BasePath					/v1
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 func main() {
 	db := infrastructure.GetMysqlConnection()
 	redisCli := infrastructure.GetRedisConnection()
