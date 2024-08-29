@@ -1,25 +1,67 @@
-basePath: /v1
-host: localhost:1323
 info:
   contact: {}
-  description: This is a recommend_swaggo server
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Recommend Swaggo API
-  version: "1.0"
 paths:
-  /customer/{id}:
+  /admin/register/customer:
     post:
-      consumes:
-      - application/json
-      description: 顧客情報の取得
+      description: 顧客情報の作成
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        type: string
+      - description: WordPress URL
+        in: formData
+        name: wordpress_url
+        type: string
       produces:
       - application/json
       responses: {}
       security:
       - Token: []
+      summary: 顧客情報の作成
+  /customer/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 顧客情報の取得
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
       summary: 顧客情報の取得
+  /customer/login:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 顧客のログイン
+      parameters:
+      - description: Email
+        in: formData
+        name: email
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        type: string
+      responses: {}
+      security:
+      - Token: []
+      summary: ログイン
 securityDefinitions:
   ApiKeyAuth:
     in: header

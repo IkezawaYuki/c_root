@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/IkezawaYuki/popple/internal/usecase"
@@ -22,11 +23,23 @@ func NewCustomerController(customerUsecase *usecase.CustomerUsecase, presenter2 
 	}
 }
 
+// Login godoc
+//
+//	@Summary		ログイン
+//	@Description	顧客のログイン
+//	@Accept			application/x-www-form-urlencoded
+//	@Security		Token
+//	@Param			email			formData	string	false	"Email"
+//	@Param			password		formData	string	false	"Password"
+//	@Router			/customer/login [post]
 func (ctr *CustomerController) Login(c echo.Context) error {
 	slog.Info("Login is invoked")
 	var user entity.User
-	if err := c.Bind(&user); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+	user.Email = c.FormValue("email")
+	user.Password = c.FormValue("password")
+	fmt.Println(user)
+	if user.Email == "" || user.Password == "" {
+		return c.String(http.StatusBadRequest, "invalid value")
 	}
 	ctx := c.Request().Context()
 	token, err := ctr.customerUsecase.Login(ctx, &user)
@@ -39,8 +52,9 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 //	@Description	顧客情報の取得
 //	@Accept			json
 //	@Produce		json
-//	@Security		Token
-//	@Router			/customer/{id} [post]
+//	@Security		BearerAuth
+//	@Param			id	path	int	true	"Customer ID"
+//	@Router			/customer/{id} [get]
 func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	slog.Info("GetCustomer is invoked")
 	customerIdParam := c.Param("id")

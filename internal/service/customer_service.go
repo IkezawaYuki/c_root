@@ -82,17 +82,19 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *entity.C
 	if err != nil {
 		return err
 	}
-	if err := s.customerRepository.Save(ctx, &model.Customer{
+	customerModel := model.Customer{
 		Name:           customer.Name,
 		Email:          customer.Email,
 		Password:       string(passwordHash),
 		DeleteHashFlag: 0,
-	}).Error; err != nil {
+	}
+	if err := s.customerRepository.Save(ctx, &customerModel).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return objects.ErrDuplicateEmail
 		}
 		return err
 	}
+	customer.ID = int(customerModel.ID)
 	return nil
 }
 

@@ -7,20 +7,14 @@ import (
 	"github.com/IkezawaYuki/popple/internal/middleware"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/labstack/echo/v4"
+	middleware2 "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"net/http"
 )
 
-//	@title						Recommend Swaggo API
-//	@version					1.0
-//	@description				This is a recommend_swaggo server
-//	@license.name				Apache 2.0
-//	@license.url				http://www.apache.org/licenses/LICENSE-2.0.html
-//	@host						localhost:1323
-//	@BasePath					/v1
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
+// @securityDefinitions.apikey
+// @in							header
+// @name						Authorization
 func main() {
 	db := infrastructure.GetMysqlConnection()
 	redisCli := infrastructure.GetRedisConnection()
@@ -36,15 +30,17 @@ func main() {
 
 	e := echo.New()
 
+	e.Use(middleware2.CORS())
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	e.Group("/api/v1")
+	v1 := e.Group("/api/v1")
 	{
-		e.POST("/customer/login", customerController.Login)
-		e.POST("/admin/login", adminController.Login)
+		v1.POST("/customer/login", customerController.Login)
+		v1.POST("/admin/login", adminController.Login)
 
-		customerHandler := e.Group("/customer")
+		customerHandler := v1.Group("/customer")
 		customerHandler.Use(customerAuthMiddleware)
 		customerHandler.GET("/:id", func(c echo.Context) error {
 			return customerController.GetCustomer(c)
@@ -57,14 +53,14 @@ func main() {
 			return c.String(http.StatusOK, c.Param("id"))
 		})
 
-		adminHandler := e.Group("/admin")
+		adminHandler := v1.Group("/admin")
 		adminHandler.Use(adminAuthMiddleware)
 		adminHandler.GET("/:id", func(c echo.Context) error {
 			return c.JSON(http.StatusNotImplemented, nil)
 		})
 		adminHandler.POST("/register/customer", adminController.RegisterCustomer)
 
-		batchHandler := e.Group("/batch")
+		batchHandler := v1.Group("/batch")
 		batchHandler.Use(badgeAuthMiddleware)
 		batchHandler.GET("/execute", batchController.Execute)
 	}
@@ -72,7 +68,7 @@ func main() {
 	docs.SwaggerInfo.Title = "Popple API"
 	docs.SwaggerInfo.Description = "Popple is very very exciting api!!!"
 	docs.SwaggerInfo.Version = "0.1"
-	docs.SwaggerInfo.Host = "popple.com"
+	docs.SwaggerInfo.Host = "127.0.0.1:1323"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 

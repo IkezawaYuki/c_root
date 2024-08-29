@@ -27,40 +27,48 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		var customer entity.Customer
 
-		fmt.Println("名前を入力してください：")
-		var name string
-		_, _ = fmt.Scan(&name)
-		customer.Name = name
+		fmt.Println("作成するユーザーの種類は入力してください：customer or admin")
+		var category string
+		_, _ = fmt.Scan(&category)
+		if category == "customer" {
+			var customer entity.Customer
+			fmt.Println("名前を入力してください：")
+			var name string
+			_, _ = fmt.Scan(&name)
+			customer.Name = name
 
-		fmt.Println("メールアドレスを入力してください")
-		var email string
-		_, _ = fmt.Scan(&email)
-		customer.Email = email
+			fmt.Println("メールアドレスを入力してください")
+			var email string
+			_, _ = fmt.Scan(&email)
+			customer.Email = email
 
-		fmt.Println("パスワードを入力してください")
-		var password string
-		_, _ = fmt.Scan(&password)
-		customer.Password = password
+			fmt.Println("パスワードを入力してください")
+			var password string
+			_, _ = fmt.Scan(&password)
+			customer.Password = password
 
-		fmt.Println("WordpressURLを入力してください")
-		var wordpressURL string
-		_, _ = fmt.Scan(&wordpressURL)
-		customer.WordpressURL = wordpressURL
+			fmt.Println("WordpressURLを入力してください")
+			var wordpressURL string
+			_, _ = fmt.Scan(&wordpressURL)
+			customer.WordpressURL = wordpressURL
 
-		fmt.Println("FacebookTokenを入力してください")
-		var facebookToken string
-		_, _ = fmt.Scan(&facebookToken)
-		customer.FacebookToken = &facebookToken
+			fmt.Println("FacebookTokenを入力してください")
+			var facebookToken string
+			_, _ = fmt.Scan(&facebookToken)
+			customer.FacebookToken = &facebookToken
 
-		err := srv.CreateCustomer(cmd.Context(), &customer)
-		if err != nil {
-			fmt.Println(err)
-			return
+			err := srv.CreateCustomer(cmd.Context(), &customer)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(customer.ID)
+			fmt.Println("success!")
+		} else if category == "admin" {
+
 		}
-		fmt.Println(customer.ID)
-		fmt.Println("success!")
+
 	},
 }
 

@@ -1,23 +1,84 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a recommend_swaggo server",
-        "title": "Recommend Swaggo API",
-        "contact": {},
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:1323",
-    "basePath": "/v1",
     "paths": {
-        "/customer/{id}": {
+        "/admin/register/customer": {
             "post": {
                 "security": [
                     {
                         "Token": []
+                    }
+                ],
+                "description": "顧客情報の作成",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "顧客情報の作成",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "WordPress URL",
+                        "name": "wordpress_url",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/customer/login": {
+            "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "顧客のログイン",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "summary": "ログイン",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/customer/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "description": "顧客情報の取得",
@@ -28,6 +89,15 @@
                     "application/json"
                 ],
                 "summary": "顧客情報の取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         }
