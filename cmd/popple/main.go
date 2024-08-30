@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// @securityDefinitions.apikey
+// @securityDefinitions.apikey BearerAuth
 // @in							header
 // @name						Authorization
 func main() {

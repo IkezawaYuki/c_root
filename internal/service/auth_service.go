@@ -26,8 +26,9 @@ func NewAuthService(customerRepo *repository.CustomerRepository, redisClient *re
 	}
 }
 
-func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
+func (a *AuthService) IsCustomerIsLogin(tokenString string) (int, error) {
 	slog.Info("IsCustomerIsLogin is invoked")
+	slog.Info(tokenString)
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -37,19 +38,20 @@ func (a *AuthService) IsCustomerIsLogin(tokenString string) (string, error) {
 	})
 	if err != nil {
 		slog.Info(err.Error())
-		return "", objects.ErrAuthorization
+		return 0, objects.ErrAuthorization
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", objects.ErrAuthorization
+		return 0, objects.ErrAuthorization
 	}
 	if !claims.VerifyAudience("customer", true) {
-		return "", objects.ErrAuthentication
+		return 0, objects.ErrAuthentication
 	}
-	return claims["sub"].(string), nil
+
+	return int(claims["sub"].(float64)), nil
 }
 
-func (a *AuthService) IsAdminLogin(tokenString string) (string, error) {
+func (a *AuthService) IsAdminLogin(tokenString string) (int, error) {
 	slog.Info("IsAdminLogin is invoked")
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -60,16 +62,16 @@ func (a *AuthService) IsAdminLogin(tokenString string) (string, error) {
 	})
 	if err != nil {
 		slog.Info(err.Error())
-		return "", objects.ErrAuthorization
+		return 0, objects.ErrAuthorization
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return "", objects.ErrAuthorization
+		return 0, objects.ErrAuthorization
 	}
 	if !claims.VerifyAudience("admin", true) {
-		return "", objects.ErrAuthentication
+		return 0, objects.ErrAuthentication
 	}
-	return claims["sub"].(string), nil
+	return int(claims["sub"].(float64)), nil
 }
 
 func (a *AuthService) GenerateJWTCustomer(c *entity.Customer) (string, error) {

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/IkezawaYuki/popple/internal/service"
 	"github.com/labstack/echo/v4"
@@ -35,6 +36,7 @@ func NewCustomerAuthMiddleware(authService *service.AuthService, presenter *pres
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			slog.Info("CustomerAuthMiddleware is invoked")
+			fmt.Println(c.Request().Header)
 			token := c.Request().Header.Get("Authorization")
 			customerID, err := authService.IsCustomerIsLogin(token)
 			if err != nil {

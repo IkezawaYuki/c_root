@@ -63,7 +63,7 @@ paths:
       - Token: []
       summary: ログイン
 securityDefinitions:
-  ApiKeyAuth:
+  BearerAuth:
     in: header
     name: Authorization
     type: apiKey
