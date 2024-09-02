@@ -46,6 +46,15 @@ func (a *AdminController) RegisterCustomer(c echo.Context) error {
 	return c.JSON(a.presenter.Generate(err, customer))
 }
 
+// Login godoc
+//
+//	@Summary		ログイン
+//	@Description	管理者のログイン
+//	@Accept			application/x-www-form-urlencoded
+//	@Security		Token
+//	@Param			email			formData	string	false	"Email"
+//	@Param			password		formData	string	false	"Password"
+//	@Router			/admin/login [post]
 func (a *AdminController) Login(c echo.Context) error {
 	var user entity.User
 	if err := c.Bind(&user); err != nil {

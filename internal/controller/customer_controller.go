@@ -67,10 +67,19 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	return c.JSON(ctr.presenter.Generate(err, customer))
 }
 
-//func (ctr *CustomerController) FetchInstagramMediaFromGraphAPI(c echo.Context) error {
-//	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
-//	customerID := c.Get("customer_id").(string)
-//	ctx := c.Request().Context()
-//	err := ctr.customerUsecase.FetchInstagramMediaFromGraphAPI(ctx, customerID)
-//	return c.JSON(ctr.presenter.Generate(err, nil))
-//}
+// FetchAndPost godoc
+//
+//	@Summary		インスタグラムとWordpressの連携
+//	@Description	インスタグラムとWordpressの連携
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path	int	true	"Customer ID"
+//	@Router			/customer/{id} [get]
+func (ctr *CustomerController) FetchAndPost(c echo.Context) error {
+	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
+	customerID := c.Get("customer_id").(int)
+	ctx := c.Request().Context()
+	err := ctr.customerUsecase.FetchAndPost(ctx, customerID)
+	return c.JSON(ctr.presenter.Generate(err, nil))
+}
