@@ -69,8 +69,8 @@ type InstagramMediaList struct {
 
 func (i *GraphAPI) GetMediaIDList(ctx context.Context, facebookToken, instagramID *string) ([]string, error) {
 	resp, err := i.httpClient.GetRequest(ctx,
-		i.baseURL+fmt.Sprintf(getMediaList, instagramID),
-		fmt.Sprintf("Bearer %s", facebookToken))
+		i.baseURL+fmt.Sprintf(getMediaList, *instagramID),
+		fmt.Sprintf("Bearer %s", *facebookToken))
 	if err != nil {
 		return nil, err
 	}

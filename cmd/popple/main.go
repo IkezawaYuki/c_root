@@ -52,6 +52,7 @@ func main() {
 		customerHandler.POST("/:id/facebook_token", func(c echo.Context) error {
 			return c.String(http.StatusOK, c.Param("id"))
 		})
+		customerHandler.POST("/i/fetch/post", customerController.FetchAndPost)
 
 		adminHandler := v1.Group("/admin")
 		adminHandler.Use(adminAuthMiddleware)

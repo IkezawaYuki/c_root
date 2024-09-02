@@ -15,6 +15,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/login": {
+            "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "管理者のログイン",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "summary": "ログイン",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/admin/register/customer": {
             "post": {
                 "security": [
@@ -51,6 +80,30 @@ const docTemplate = `{
                         "description": "WordPress URL",
                         "name": "wordpress_url",
                         "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/customer/i/fetch/post": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "インスタグラムとWordpressの連携",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "インスタグラムとWordpressの連携",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "customer_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {}

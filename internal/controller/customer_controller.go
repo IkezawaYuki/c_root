@@ -71,11 +71,10 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 //
 //	@Summary		インスタグラムとWordpressの連携
 //	@Description	インスタグラムとWordpressの連携
-//	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			id	path	int	true	"Customer ID"
-//	@Router			/customer/{id} [get]
+//	@Param			customer_id	path	int	true	"Customer ID"
+//	@Router			/customer/i/fetch/post [post]
 func (ctr *CustomerController) FetchAndPost(c echo.Context) error {
 	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
 	customerID := c.Get("customer_id").(int)
