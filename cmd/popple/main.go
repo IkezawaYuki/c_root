@@ -30,7 +30,17 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware2.CORS())
+	e.Use(middleware2.CORSWithConfig(middleware2.CORSConfig{
+		AllowOrigins: []string{
+			"*",
+		},
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+		},
+	}))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")

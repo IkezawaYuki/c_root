@@ -33,7 +33,7 @@ to quickly create a Cobra application.`,
 		if err := db.AutoMigrate(&model.Post{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
-		if err := db.AutoMigrate(&model.Customer{}); err != nil {
+		if err := db.AutoMigrate(&model.Admin{}); err != nil {
 			fmt.Printf("AutoMigrate err: %v\n", err)
 		}
 		fmt.Println("end")
