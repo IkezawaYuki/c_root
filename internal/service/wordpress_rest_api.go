@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/IkezawaYuki/popple/config"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/infrastructure"
@@ -19,7 +20,7 @@ func NewWordpressRestAPI(httpClient *infrastructure.HttpClient) *WordpressRestAP
 	}
 }
 
-const wpPostUrl = "/wp/v2/posts"
+const wpPostUrl = "https://%s/wp-json/wp/v2/posts"
 
 type CreatePostResponse struct {
 	Link string `json:"link"`
@@ -27,10 +28,11 @@ type CreatePostResponse struct {
 
 func (w *WordpressRestAPI) CreatePosts(ctx context.Context, wordpressURL string, instaDetail *entity.InstagramPost, wpMedia []*entity.WordpressMedia) (string, error) {
 	posts := entity.NewWordpressPosts(instaDetail, wpMedia)
-	resp, err := w.httpClient.PostRequest(ctx, wordpressURL+wpPostUrl, posts, BasicAuthHeader())
+	resp, err := w.httpClient.PostRequest(ctx, fmt.Sprintf(wpPostUrl, wordpressURL), posts, BasicAuthHeader())
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(string(resp))
 	var response CreatePostResponse
 	if err := json.Unmarshal(resp, &response); err != nil {
 		return "", err
@@ -50,10 +52,10 @@ func (w *WordpressRestAPI) UploadFiles(ctx context.Context, wordpressURL string,
 	return wordpressMediaList, nil
 }
 
-const wpMediaUrl = "/wp-json/wp/v2/media"
+const wpMediaUrl = "https://%s/wp-json/wp/v2/media"
 
 func (w *WordpressRestAPI) UploadFile(ctx context.Context, wordpressURL string, path string) (*entity.WordpressMedia, error) {
-	resp, err := w.httpClient.UploadFile(ctx, wordpressURL+wpMediaUrl, path, BasicAuthHeader())
+	resp, err := w.httpClient.UploadFile(ctx, fmt.Sprintf(wpMediaUrl, wordpressURL), path, BasicAuthHeader())
 	if err != nil {
 		return nil, err
 	}

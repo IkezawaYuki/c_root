@@ -91,10 +91,11 @@ func (c *CustomerUsecase) FetchAndPost(ctx context.Context, customerID int) erro
 		if err := c.fileTransfer.MakeTempDirectory(customerID); err != nil {
 			return err
 		}
-		mediaPaths, err := c.fileTransfer.DownloadMedias(ctx, detail)
+		mediaPaths, err := c.fileTransfer.DownloadMedias(ctx, customerID, detail)
 		if err != nil {
 			return err
 		}
+		fmt.Println(mediaPaths)
 		wordpressMedia, err := c.wordpressRestApi.UploadFiles(ctx, customer.WordpressURL, mediaPaths)
 		if err != nil {
 			return err
@@ -107,47 +108,6 @@ func (c *CustomerUsecase) FetchAndPost(ctx context.Context, customerID int) erro
 		if err := c.postService.SaveWordpressPost(ctx, post); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func (c *CustomerUsecase) FetchAndPostByInstagramID(ctx context.Context, customerID int, instagramID string) error {
-	customer, err := c.customerService.FindByID(ctx, customerID)
-	if err != nil {
-		return err
-	}
-	if customer.FacebookToken == nil {
-		return fmt.Errorf("customer.FacebookToken is nil")
-	}
-	detail, err := c.graphApi.GetMediaDetail(ctx, customer.FacebookToken, instagramID)
-	if err != nil {
-		return err
-	}
-	post, err := c.postService.SaveInstagramPost(ctx, customerID, detail)
-	if err != nil {
-		return err
-	}
-	if err := c.graphApi.GetMediaChild(ctx, customer.FacebookToken, detail); err != nil {
-		return err
-	}
-	if err := c.fileTransfer.MakeTempDirectory(customerID); err != nil {
-		return err
-	}
-	mediaPaths, err := c.fileTransfer.DownloadMedias(ctx, detail)
-	if err != nil {
-		return err
-	}
-	wordpressMedia, err := c.wordpressRestApi.UploadFiles(ctx, customer.WordpressURL, mediaPaths)
-	if err != nil {
-		return err
-	}
-	wordpressLink, err := c.wordpressRestApi.CreatePosts(ctx, customer.WordpressURL, detail, wordpressMedia)
-	if err != nil {
-		return err
-	}
-	post.WordpressLink = &wordpressLink
-	if err := c.postService.SaveWordpressPost(ctx, post); err != nil {
-		return err
 	}
 	return nil
 }

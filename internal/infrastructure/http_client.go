@@ -68,13 +68,17 @@ func (c *HttpClient) GetRequest(ctx context.Context, url string, authorization s
 		return nil, err
 	}
 	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-		return nil, fmt.Errorf("%s", string(bodyBytes))
+		errResp := ErrResp{}
+		if err := json.Unmarshal(bodyBytes, &errResp); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("code=%s: message=%s", errResp.Code, errResp.Message)
 	}
 	return bodyBytes, nil
 }
 
-func (c *HttpClient) UploadFile(ctx context.Context, endpoint, path string, authorization string) ([]byte, error) {
-	file, err := os.Open(path)
+func (c *HttpClient) UploadFile(ctx context.Context, endpoint, filepathName string, authorization string) ([]byte, error) {
+	file, err := os.Open(filepathName)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +88,7 @@ func (c *HttpClient) UploadFile(ctx context.Context, endpoint, path string, auth
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", filepath.Base(path))
+	part, err := writer.CreateFormFile("file", filepath.Base(filepathName))
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +117,18 @@ func (c *HttpClient) UploadFile(ctx context.Context, endpoint, path string, auth
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-		return nil, fmt.Errorf("%s", string(bodyBytes))
+		errResp := ErrResp{}
+		if err := json.Unmarshal(bodyBytes, &errResp); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("code=%s: message=%s", errResp.Code, errResp.Message)
 	}
 	return bodyBytes, nil
+}
+
+type ErrResp struct {
+	Code    string
+	Message string
 }

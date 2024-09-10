@@ -40,6 +40,6 @@ func (p *PostRepository) FindByID(ctx context.Context, id string) (*model.Post, 
 
 func (p *PostRepository) FindByInstagramMediaID(ctx context.Context, InstagramMediaID string) (*model.Post, error) {
 	var post model.Post
-	err := p.db.WithContext(ctx).First(&post, "instagram_id = ?", InstagramMediaID).Error
+	err := p.db.WithContext(ctx).First(&post, "instagram_media_id = ? and wordpress_link is null", InstagramMediaID).Error
 	return &post, err
 }

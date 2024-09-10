@@ -34,6 +34,10 @@ func main() {
 		AllowOrigins: []string{
 			"*",
 		},
+		AllowHeaders: []string{
+			"Authorization",
+			"Content-Type",
+		},
 		AllowMethods: []string{
 			echo.GET,
 			echo.POST,

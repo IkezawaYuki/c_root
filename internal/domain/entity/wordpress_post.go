@@ -9,11 +9,11 @@ type WordpressPost struct {
 	Title         string `json:"title"`
 	Content       string `json:"content"`
 	Status        string `json:"status"`
-	FeaturedMedia string `json:"featured_media"`
+	FeaturedMedia int    `json:"featured_media"`
 }
 
 type WordpressMedia struct {
-	ID        string `json:"id"`
+	ID        int    `json:"id"`
 	SourceURL string `json:"source_url"`
 	MediaType string `json:"media_type"`
 }
