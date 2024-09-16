@@ -31,3 +31,7 @@ func (a *AdminRepository) FindByEmail(ctx context.Context, email string) (*model
 	err := a.db.WithContext(ctx).First(&admin, "email = ?", email).Error
 	return &admin, err
 }
+
+func (a *AdminRepository) Save(ctx context.Context, admin model.Admin) error {
+	return a.db.WithContext(ctx).Save(&admin).Error
+}

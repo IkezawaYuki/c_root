@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/presenter"
 	"github.com/IkezawaYuki/popple/internal/usecase"
 	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
-	"strconv"
 )
 
 type CustomerController struct {
@@ -37,7 +35,6 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 	var user entity.User
 	user.Email = c.FormValue("email")
 	user.Password = c.FormValue("password")
-	fmt.Println(user)
 	if user.Email == "" || user.Password == "" {
 		return c.String(http.StatusBadRequest, "invalid value")
 	}
@@ -52,19 +49,30 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 //	@Description	顧客情報の取得
 //	@Accept			json
 //	@Produce		json
-//	@Security		BearerAuth
-//	@Param			id	path	int	true	"Customer ID"
-//	@Router			/customer/{id} [get]
+//	@Security		Token
+//	@Router			/customer/i [get]
 func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 	slog.Info("GetCustomer is invoked")
-	customerIdParam := c.Param("id")
-	customerId, err := strconv.Atoi(customerIdParam)
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
+	customerId := c.Get("customer_id").(int)
 	ctx := c.Request().Context()
 	customer, err := ctr.customerUsecase.GetCustomer(ctx, customerId)
 	return c.JSON(ctr.presenter.Generate(err, customer))
+}
+
+// GetPosts godoc
+//
+//	@Summary		顧客の投稿一覧の取得
+//	@Description	顧客ごとの投稿を一覧で取得します
+//	@Accept			json
+//	@Produce		json
+//	@Security		Token
+//	@Router			/customer/i/posts [get]
+func (ctr *CustomerController) GetPosts(c echo.Context) error {
+	slog.Info("GetPosts is invoked")
+	customerId := c.Get("customer_id").(int)
+	ctx := c.Request().Context()
+	posts, err := ctr.customerUsecase.GetPostsByCustomerID(ctx, customerId)
+	return c.JSON(ctr.presenter.Generate(err, posts))
 }
 
 // FetchAndPost godoc
@@ -72,11 +80,11 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 //	@Summary		インスタグラムとWordpressの連携
 //	@Description	インスタグラムとWordpressの連携
 //	@Produce		json
-//	@Security		BearerAuth
+//	@Security		Token
 //	@Param			customer_id	path	int	true	"Customer ID"
 //	@Router			/customer/i/fetch/post [post]
 func (ctr *CustomerController) FetchAndPost(c echo.Context) error {
-	slog.Info("FetchInstagramMediaFromGraphAPI is invoked")
+	slog.Info("FetchAndPost is invoked")
 	customerID := c.Get("customer_id").(int)
 	ctx := c.Request().Context()
 	err := ctr.customerUsecase.FetchAndPost(ctx, customerID)

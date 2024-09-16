@@ -2,13 +2,16 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/IkezawaYuki/popple/config"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
+	"github.com/IkezawaYuki/popple/internal/domain/model"
 	"github.com/IkezawaYuki/popple/internal/domain/objects"
 	"github.com/IkezawaYuki/popple/internal/repository"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"log/slog"
 	"strings"
 	"time"
@@ -172,4 +175,37 @@ func (a *AdminService) FindByEmail(ctx context.Context, email string) (*entity.A
 		Password: m.Password,
 		Email:    m.Email,
 	}, nil
+}
+
+func (a *AdminService) FindByID(ctx context.Context, id int) (*entity.Admin, error) {
+	m, err := a.adminRepository.FindById(ctx, uint64(id))
+	if err != nil {
+		return nil, err
+	}
+	return &entity.Admin{
+		ID:       m.ID,
+		Name:     m.Name,
+		Password: m.Password,
+		Email:    m.Email,
+	}, nil
+}
+
+func (a *AdminService) CreateAdmin(ctx context.Context, admin *entity.Admin) error {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	adminModel := model.Admin{
+		Name:     admin.Name,
+		Email:    admin.Email,
+		Password: string(passwordHash),
+	}
+	if err := a.adminRepository.Save(ctx, &adminModel).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return objects.ErrDuplicateEmail
+		}
+		return err
+	}
+	admin.ID = adminModel.ID
+	return nil
 }

@@ -15,14 +15,111 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/login": {
-            "post": {
+        "/admin/admins": {
+            "get": {
                 "security": [
                     {
                         "Token": []
                     }
                 ],
-                "description": "管理者のログイン",
+                "description": "管理者ユーザーを一覧で取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "管理者ユーザー一覧取得",
+                "responses": {}
+            }
+        },
+        "/admin/admins/{adminId}": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "管理者ユーザーを一覧で取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "管理者ユーザー一覧取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Admin ID",
+                        "name": "adminId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/admin/customers": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "全顧客を一覧で取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "顧客一覧取得",
+                "responses": {}
+            }
+        },
+        "/admin/customers/{customerId}": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "顧客を一件取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "顧客取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/admin/customers/{customerId}/posts": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "顧客ごとの投稿データを一覧で取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "投稿取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/admin/login": {
+            "post": {
+                "description": "管理者としてログインします",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -32,13 +129,15 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Email",
                         "name": "email",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "Password",
                         "name": "password",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {}
@@ -51,11 +150,11 @@ const docTemplate = `{
                         "Token": []
                     }
                 ],
-                "description": "顧客情報の作成",
+                "description": "顧客を作成します",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "顧客情報の作成",
+                "summary": "顧客の作成",
                 "parameters": [
                     {
                         "type": "string",
@@ -85,11 +184,29 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/customer/i": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "顧客情報の取得",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "顧客情報の取得",
+                "responses": {}
+            }
+        },
         "/customer/i/fetch/post": {
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Token": []
                     }
                 ],
                 "description": "インスタグラムとWordpressの連携",
@@ -106,6 +223,24 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+                "responses": {}
+            }
+        },
+        "/customer/i/posts": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "顧客ごとの投稿を一覧で取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "顧客の投稿一覧の取得",
                 "responses": {}
             }
         },
@@ -133,33 +268,6 @@ const docTemplate = `{
                         "description": "Password",
                         "name": "password",
                         "in": "formData"
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/customer/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "顧客情報の取得",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "顧客情報の取得",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {}

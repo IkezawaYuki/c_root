@@ -1,27 +1,90 @@
 info:
   contact: {}
 paths:
+  /admin/admins:
+    get:
+      description: 管理者ユーザーを一覧で取得します
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 管理者ユーザー一覧取得
+  /admin/admins/{adminId}:
+    get:
+      description: 管理者ユーザーを一覧で取得します
+      parameters:
+      - description: Admin ID
+        in: query
+        name: adminId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 管理者ユーザー一覧取得
+  /admin/customers:
+    get:
+      description: 全顧客を一覧で取得します
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 顧客一覧取得
+  /admin/customers/{customerId}:
+    get:
+      description: 顧客を一件取得します
+      parameters:
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 顧客取得
+  /admin/customers/{customerId}/posts:
+    get:
+      description: 顧客ごとの投稿データを一覧で取得します
+      parameters:
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 投稿取得
   /admin/login:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: 管理者のログイン
+      description: 管理者としてログインします
       parameters:
       - description: Email
         in: formData
         name: email
+        required: true
         type: string
       - description: Password
         in: formData
         name: password
+        required: true
         type: string
       responses: {}
-      security:
-      - Token: []
       summary: ログイン
   /admin/register/customer:
     post:
-      description: 顧客情報の作成
+      description: 顧客を作成します
       parameters:
       - description: Name
         in: formData
@@ -44,23 +107,17 @@ paths:
       responses: {}
       security:
       - Token: []
-      summary: 顧客情報の作成
-  /customer/{id}:
+      summary: 顧客の作成
+  /customer/i:
     get:
       consumes:
       - application/json
       description: 顧客情報の取得
-      parameters:
-      - description: Customer ID
-        in: path
-        name: id
-        required: true
-        type: integer
       produces:
       - application/json
       responses: {}
       security:
-      - BearerAuth: []
+      - Token: []
       summary: 顧客情報の取得
   /customer/i/fetch/post:
     post:
@@ -75,8 +132,19 @@ paths:
       - application/json
       responses: {}
       security:
-      - BearerAuth: []
+      - Token: []
       summary: インスタグラムとWordpressの連携
+  /customer/i/posts:
+    get:
+      consumes:
+      - application/json
+      description: 顧客ごとの投稿を一覧で取得します
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 顧客の投稿一覧の取得
   /customer/login:
     post:
       consumes:

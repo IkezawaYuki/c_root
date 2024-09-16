@@ -62,3 +62,28 @@ func (s *PostService) SaveWordpressPost(ctx context.Context, post *entity.Post) 
 	m.WordpressLink.String = *post.WordpressLink
 	return s.postRepo.Save(ctx, m)
 }
+
+func (s *PostService) FindByCustomerID(ctx context.Context, customerID int) ([]entity.Post, error) {
+	posts, err := s.postRepo.FindByCustomerID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]entity.Post, len(posts))
+	for i, post := range posts {
+		p := entity.Post{
+			ID:               int(post.ID),
+			CustomerID:       post.CustomerID,
+			InstagramMediaID: post.InstagramMediaID,
+			InstagramLink:    post.InstagramLink,
+			CreatedAt:        post.CreatedAt,
+		}
+		if post.WordpressLink.Valid {
+			p.WordpressLink = &post.WordpressLink.String
+		}
+		if post.WordpressMediaID.Valid {
+			p.WordpressMediaID = &post.WordpressMediaID.String
+		}
+		result[i] = p
+	}
+	return result, nil
+}

@@ -37,6 +37,10 @@ func (a *AdminUsecase) RegisterCustomer(ctx context.Context, customer *entity.Cu
 	return a.customerService.CreateCustomer(ctx, customer)
 }
 
+func (a *AdminUsecase) RegisterAdmin(ctx context.Context, admin *entity.Admin) error {
+	return a.adminService.CreateAdmin(ctx, admin)
+}
+
 func (a *AdminUsecase) Login(ctx context.Context, user *entity.User) (string, error) {
 	customer, err := a.adminService.FindByEmail(ctx, user.Email)
 	if err != nil {
@@ -52,6 +56,18 @@ func (a *AdminUsecase) GetCustomers(ctx context.Context) ([]entity.Customer, err
 	return a.customerService.FindAll(ctx)
 }
 
+func (a *AdminUsecase) GetCustomer(ctx context.Context, id int) (*entity.Customer, error) {
+	return a.customerService.FindByID(ctx, id)
+}
+
 func (a *AdminUsecase) GetAdmins(ctx context.Context) ([]entity.Admin, error) {
 	return a.adminService.FindAll(ctx)
+}
+
+func (a *AdminUsecase) GetAdmin(ctx context.Context, id int) (*entity.Admin, error) {
+	return a.adminService.FindByID(ctx, id)
+}
+
+func (a *AdminUsecase) GetPostByCustomer(ctx context.Context, customerId int) ([]entity.Post, error) {
+	return a.postService.FindByCustomerID(ctx, customerId)
 }

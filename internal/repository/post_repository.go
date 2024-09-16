@@ -26,9 +26,9 @@ func (p *PostRepository) FindAll(ctx context.Context) ([]model.Post, error) {
 	return posts, err
 }
 
-func (p *PostRepository) FindByCustomerID(ctx context.Context, customerUUID string) ([]model.Post, error) {
+func (p *PostRepository) FindByCustomerID(ctx context.Context, customerID int) ([]model.Post, error) {
 	var posts []model.Post
-	err := p.db.WithContext(ctx).Find(&posts, "customer_id = ?", customerUUID).Error
+	err := p.db.WithContext(ctx).Find(&posts, "customer_id = ?", customerID).Error
 	return posts, err
 }
 

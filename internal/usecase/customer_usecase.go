@@ -111,3 +111,7 @@ func (c *CustomerUsecase) FetchAndPost(ctx context.Context, customerID int) erro
 	}
 	return nil
 }
+
+func (c *CustomerUsecase) GetPostsByCustomerID(ctx context.Context, customerID int) ([]entity.Post, error) {
+	return c.postService.FindByCustomerID(ctx, customerID)
+}
