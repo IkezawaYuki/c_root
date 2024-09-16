@@ -10,9 +10,11 @@ paths:
       security:
       - Token: []
       summary: 管理者ユーザー一覧取得
-  /admin/admins/{adminId}:
+      tags:
+      - Admin
+  /admin/admins/i:
     get:
-      description: 管理者ユーザーを一覧で取得します
+      description: ログイン中の管理者情報取得します
       parameters:
       - description: Admin ID
         in: query
@@ -24,7 +26,9 @@ paths:
       responses: {}
       security:
       - Token: []
-      summary: 管理者ユーザー一覧取得
+      summary: ログイン中の管理者情報取得
+      tags:
+      - Admin
   /admin/customers:
     get:
       description: 全顧客を一覧で取得します
@@ -34,6 +38,8 @@ paths:
       security:
       - Token: []
       summary: 顧客一覧取得
+      tags:
+      - Admin
   /admin/customers/{customerId}:
     get:
       description: 顧客を一件取得します
@@ -49,6 +55,8 @@ paths:
       security:
       - Token: []
       summary: 顧客取得
+      tags:
+      - Admin
   /admin/customers/{customerId}/posts:
     get:
       description: 顧客ごとの投稿データを一覧で取得します
@@ -64,6 +72,8 @@ paths:
       security:
       - Token: []
       summary: 投稿取得
+      tags:
+      - Admin
   /admin/login:
     post:
       consumes:
@@ -82,6 +92,32 @@ paths:
         type: string
       responses: {}
       summary: ログイン
+      tags:
+      - Admin
+  /admin/register/admin:
+    post:
+      description: 管理者ユーザーを作成します
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Token: []
+      summary: 管理者ユーザーの作成
+      tags:
+      - Admin
   /admin/register/customer:
     post:
       description: 顧客を作成します
@@ -108,17 +144,30 @@ paths:
       security:
       - Token: []
       summary: 顧客の作成
+      tags:
+      - Admin
+  /badge/execute:
+    get:
+      description: 全顧客に対して、InstagramからWordpressへのデータ連携を行います。
+      responses: {}
+      security:
+      - Token: []
+      summary: バッチ実行
+      tags:
+      - Badge
   /customer/i:
     get:
       consumes:
       - application/json
-      description: 顧客情報の取得
+      description: 自分の顧客情報を取得します
       produces:
       - application/json
       responses: {}
       security:
       - Token: []
       summary: 顧客情報の取得
+      tags:
+      - Customer
   /customer/i/fetch/post:
     post:
       description: インスタグラムとWordpressの連携
@@ -134,6 +183,8 @@ paths:
       security:
       - Token: []
       summary: インスタグラムとWordpressの連携
+      tags:
+      - Customer
   /customer/i/posts:
     get:
       consumes:
@@ -145,11 +196,13 @@ paths:
       security:
       - Token: []
       summary: 顧客の投稿一覧の取得
+      tags:
+      - Customer
   /customer/login:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: 顧客のログイン
+      description: 顧客としてログインします
       parameters:
       - description: Email
         in: formData
@@ -163,6 +216,8 @@ paths:
       security:
       - Token: []
       summary: ログイン
+      tags:
+      - Customer
 securityDefinitions:
   BearerAuth:
     in: header

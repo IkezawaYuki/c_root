@@ -18,6 +18,13 @@ func NewBatchController(batchUsecase *usecase.BatchUsecase, presenter2 *presente
 	}
 }
 
+// Execute godoc
+//
+//	@Summary		バッチ実行
+//	@Description	全顧客に対して、InstagramからWordpressへのデータ連携を行います。
+//	@Tags			Badge
+//	@Security		Token
+//	@Router			/badge/execute [get]
 func (ctr *BatchController) Execute(c echo.Context) error {
 	err := ctr.batchUsecase.Execute(c.Request().Context())
 	return c.JSON(ctr.httpPresenter.Generate(err, "ok"))

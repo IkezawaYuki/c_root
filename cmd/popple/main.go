@@ -70,10 +70,12 @@ func main() {
 
 		adminHandler := v1.Group("/admin")
 		adminHandler.Use(adminAuthMiddleware)
-		adminHandler.GET("/:id", func(c echo.Context) error {
-			return c.JSON(http.StatusNotImplemented, nil)
-		})
 		adminHandler.POST("/register/customer", adminController.RegisterCustomer)
+		adminHandler.POST("/register/admin", adminController.RegisterAdmin)
+		adminHandler.GET("/admins/i", adminController.GetAdmin)
+		adminHandler.GET("/admin/customers", adminController.GetCustomers)
+		adminHandler.GET("/admin/customers/:customerId", adminController.GetCustomer)
+		adminHandler.GET("/admin/customers/:customerId/posts", adminController.GetPostsByCustomer)
 
 		batchHandler := v1.Group("/batch")
 		batchHandler.Use(badgeAuthMiddleware)

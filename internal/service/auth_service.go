@@ -200,7 +200,7 @@ func (a *AdminService) CreateAdmin(ctx context.Context, admin *entity.Admin) err
 		Email:    admin.Email,
 		Password: string(passwordHash),
 	}
-	if err := a.adminRepository.Save(ctx, &adminModel).Error; err != nil {
+	if err := a.adminRepository.Save(ctx, &adminModel); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return objects.ErrDuplicateEmail
 		}

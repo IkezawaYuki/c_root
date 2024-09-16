@@ -24,9 +24,9 @@ func NewCustomerController(customerUsecase *usecase.CustomerUsecase, presenter2 
 // Login godoc
 //
 //	@Summary		ログイン
-//	@Description	顧客のログイン
+//	@Description	顧客としてログインします
+//	@Tags			Customer
 //	@Accept			application/x-www-form-urlencoded
-//	@Security		Token
 //	@Param			email			formData	string	false	"Email"
 //	@Param			password		formData	string	false	"Password"
 //	@Router			/customer/login [post]
@@ -46,7 +46,8 @@ func (ctr *CustomerController) Login(c echo.Context) error {
 // GetCustomer godoc
 //
 //	@Summary		顧客情報の取得
-//	@Description	顧客情報の取得
+//	@Description	自分の顧客情報を取得します
+//	@Tags			Customer
 //	@Accept			json
 //	@Produce		json
 //	@Security		Token
@@ -63,6 +64,7 @@ func (ctr *CustomerController) GetCustomer(c echo.Context) error {
 //
 //	@Summary		顧客の投稿一覧の取得
 //	@Description	顧客ごとの投稿を一覧で取得します
+//	@Tags			Customer
 //	@Accept			json
 //	@Produce		json
 //	@Security		Token
@@ -79,6 +81,7 @@ func (ctr *CustomerController) GetPosts(c echo.Context) error {
 //
 //	@Summary		インスタグラムとWordpressの連携
 //	@Description	インスタグラムとWordpressの連携
+//	@Tags			Customer
 //	@Produce		json
 //	@Security		Token
 //	@Param			customer_id	path	int	true	"Customer ID"

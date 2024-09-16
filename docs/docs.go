@@ -26,22 +26,28 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Admin"
+                ],
                 "summary": "管理者ユーザー一覧取得",
                 "responses": {}
             }
         },
-        "/admin/admins/{adminId}": {
+        "/admin/admins/i": {
             "get": {
                 "security": [
                     {
                         "Token": []
                     }
                 ],
-                "description": "管理者ユーザーを一覧で取得します",
+                "description": "ログイン中の管理者情報取得します",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "管理者ユーザー一覧取得",
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "ログイン中の管理者情報取得",
                 "parameters": [
                     {
                         "type": "integer",
@@ -65,6 +71,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Admin"
+                ],
                 "summary": "顧客一覧取得",
                 "responses": {}
             }
@@ -79,6 +88,9 @@ const docTemplate = `{
                 "description": "顧客を一件取得します",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Admin"
                 ],
                 "summary": "顧客取得",
                 "parameters": [
@@ -104,6 +116,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Admin"
+                ],
                 "summary": "投稿取得",
                 "parameters": [
                     {
@@ -122,6 +137,9 @@ const docTemplate = `{
                 "description": "管理者としてログインします",
                 "consumes": [
                     "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "Admin"
                 ],
                 "summary": "ログイン",
                 "parameters": [
@@ -143,6 +161,44 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/admin/register/admin": {
+            "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "管理者ユーザーを作成します",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "管理者ユーザーの作成",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/admin/register/customer": {
             "post": {
                 "security": [
@@ -153,6 +209,9 @@ const docTemplate = `{
                 "description": "顧客を作成します",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Admin"
                 ],
                 "summary": "顧客の作成",
                 "parameters": [
@@ -184,6 +243,21 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/badge/execute": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "全顧客に対して、InstagramからWordpressへのデータ連携を行います。",
+                "tags": [
+                    "Badge"
+                ],
+                "summary": "バッチ実行",
+                "responses": {}
+            }
+        },
         "/customer/i": {
             "get": {
                 "security": [
@@ -191,12 +265,15 @@ const docTemplate = `{
                         "Token": []
                     }
                 ],
-                "description": "顧客情報の取得",
+                "description": "自分の顧客情報を取得します",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Customer"
                 ],
                 "summary": "顧客情報の取得",
                 "responses": {}
@@ -212,6 +289,9 @@ const docTemplate = `{
                 "description": "インスタグラムとWordpressの連携",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Customer"
                 ],
                 "summary": "インスタグラムとWordpressの連携",
                 "parameters": [
@@ -240,6 +320,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "顧客の投稿一覧の取得",
                 "responses": {}
             }
@@ -251,9 +334,12 @@ const docTemplate = `{
                         "Token": []
                     }
                 ],
-                "description": "顧客のログイン",
+                "description": "顧客としてログインします",
                 "consumes": [
                     "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "Customer"
                 ],
                 "summary": "ログイン",
                 "parameters": [
