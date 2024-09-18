@@ -17,7 +17,18 @@ import (
 // @name						Authorization
 func main() {
 	db := infrastructure.GetMysqlConnection()
+	conn, err := db.DB()
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+
 	redisCli := infrastructure.GetRedisConnection()
+	defer func() {
+		_ = redisCli.Close()
+	}()
 	customerController := di.NewCustomerController(db, redisCli)
 	adminController := di.NewAdminController(db, redisCli)
 	authService := di.NewAuthService(db, redisCli)

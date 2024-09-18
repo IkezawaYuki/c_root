@@ -93,7 +93,7 @@ func (a *AuthService) GenerateJWTAdmin(admin *entity.Admin) (string, error) {
 	claims := jwt.MapClaims{
 		"iss":   "popple",
 		"aud":   "admin",
-		"sub":   admin.UUID,
+		"sub":   admin.ID,
 		"email": admin.Email,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
