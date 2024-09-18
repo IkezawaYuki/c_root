@@ -40,7 +40,7 @@ func (a *AdminController) RegisterCustomer(c echo.Context) error {
 	customer.Name = c.FormValue("name")
 	customer.Password = c.FormValue("password")
 	customer.Email = c.FormValue("email")
-	customer.WordpressURL = c.FormValue("wordpress_url")
+	customer.WordpressURL = c.FormValue("wordpressUrl")
 	if customer.Name == "" || customer.Password == "" || customer.Email == "" || customer.WordpressURL == "" {
 		return c.JSON(http.StatusBadRequest, "invalid value")
 	}
