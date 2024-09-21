@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/IkezawaYuki/popple/internal/domain/entity"
 	"github.com/IkezawaYuki/popple/internal/domain/model"
 	"github.com/IkezawaYuki/popple/internal/domain/objects"
@@ -57,22 +58,14 @@ func (s *CustomerService) GetCustomerByEmail(ctx context.Context, email string) 
 
 func convertCustomer(m *model.Customer) *entity.Customer {
 	var customer entity.Customer
-
 	customer.ID = int(m.ID)
 	customer.Name = m.Name
 	customer.Password = m.Password
 	customer.Email = m.Email
 	customer.WordpressURL = m.WordpressURL
-
-	if m.FacebookToken.Valid {
-		customer.FacebookToken = &m.FacebookToken.String
-	}
-	if m.InstagramID.Valid {
-		customer.InstagramID = &m.InstagramID.String
-	}
-	if m.InstagramName.Valid {
-		customer.InstagramName = &m.InstagramName.String
-	}
+	customer.FacebookToken = fromNullString(m.FacebookToken)
+	customer.InstagramID = fromNullString(m.InstagramID)
+	customer.InstagramName = fromNullString(m.InstagramName)
 	customer.DeleteHashFlag = m.DeleteHashFlag
 	return &customer
 }
@@ -86,13 +79,19 @@ func (s *CustomerService) CreateCustomer(ctx context.Context, customer *entity.C
 		Name:           customer.Name,
 		Email:          customer.Email,
 		Password:       string(passwordHash),
-		DeleteHashFlag: 0,
+		WordpressURL:   customer.WordpressURL,
+		DeleteHashFlag: customer.DeleteHashFlag,
+		FacebookToken:  toNullableString(customer.FacebookToken),
+		InstagramID:    toNullableString(customer.InstagramID),
+		InstagramName:  toNullableString(customer.InstagramName),
+		StartDate:      toNullableTime(customer.StartDate),
 	}
+
 	if err := s.customerRepository.Save(ctx, &customerModel).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return objects.ErrDuplicateEmail
 		}
-		return err
+		return fmt.Errorf("failed to save customer: %w", err)
 	}
 	customer.ID = int(customerModel.ID)
 	return nil

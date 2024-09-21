@@ -32,7 +32,6 @@ func (w *WordpressRestAPI) CreatePosts(ctx context.Context, wordpressURL string,
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(resp))
 	var response CreatePostResponse
 	if err := json.Unmarshal(resp, &response); err != nil {
 		return "", err

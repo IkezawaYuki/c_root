@@ -131,18 +131,10 @@ func (a *AdminService) GetCustomerByID(ctx context.Context, id int) (*entity.Cus
 	customer.Password = customerModel.Password
 	customer.Email = customerModel.Email
 	customer.WordpressURL = customerModel.WordpressURL
-	if customerModel.FacebookToken.Valid {
-		customer.FacebookToken = &customerModel.FacebookToken.String
-	}
-	if customerModel.StartDate.Valid {
-		customer.StartDate = &customerModel.StartDate.Time
-	}
-	if customerModel.InstagramID.Valid {
-		customer.InstagramID = &customerModel.InstagramID.String
-	}
-	if customerModel.InstagramName.Valid {
-		customer.InstagramName = &customerModel.InstagramName.String
-	}
+	customer.FacebookToken = fromNullString(customerModel.FacebookToken)
+	customer.StartDate = FromNullableTime(customerModel.StartDate)
+	customer.InstagramID = fromNullString(customerModel.InstagramID)
+	customer.InstagramName = fromNullString(customerModel.InstagramName)
 	customer.DeleteHashFlag = customerModel.DeleteHashFlag
 	return &customer, nil
 }

@@ -70,20 +70,15 @@ func (s *PostService) FindByCustomerID(ctx context.Context, customerID int) ([]e
 	}
 	result := make([]entity.Post, len(posts))
 	for i, post := range posts {
-		p := entity.Post{
+		result[i] = entity.Post{
 			ID:               int(post.ID),
 			CustomerID:       post.CustomerID,
 			InstagramMediaID: post.InstagramMediaID,
 			InstagramLink:    post.InstagramLink,
 			CreatedAt:        post.CreatedAt,
+			WordpressLink:    fromNullString(post.WordpressLink),
+			WordpressMediaID: fromNullString(post.WordpressMediaID),
 		}
-		if post.WordpressLink.Valid {
-			p.WordpressLink = &post.WordpressLink.String
-		}
-		if post.WordpressMediaID.Valid {
-			p.WordpressMediaID = &post.WordpressMediaID.String
-		}
-		result[i] = p
 	}
 	return result, nil
 }
